@@ -297,6 +297,7 @@ class Window(MSFluentWindow):
         self.card2_weather_card_label3.setText("🟡最高温->" + "未找到")
         self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label3)
 
+
         # 添加最低温到天气卡片
         self.card2_weather_card_label4 = BodyLabel()
         self.card2_weather_card_label4.setText("🟡最低温->" + "未找到")
