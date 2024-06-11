@@ -117,8 +117,6 @@ class Window(MSFluentWindow):
         self.initAppInterface()
         self.initExtendInterface()
 
-
-
     def show_message_box(self):
         w = MessageBox(
             '信息',
