@@ -5,6 +5,8 @@ from bs4 import BeautifulSoup
 
 def get_info(source):
     # 解决网页乱码，添加'html5lib'，而不是lxml
+    if source == "获取失败":
+        return "获取失败"
     try:
         soup = BeautifulSoup(source, 'html5lib')  # pip install html5lib
         # 1.进入整体表格
@@ -45,17 +47,19 @@ def get_weather_data():
         url = 'http://www.weather.com.cn/textFC/' + dq_name + '.shtml'
         source = get_source(url)
         info = get_info(source)
+        if info == "获取失败":
+            return "获取失败"
         info_list += info
     return info_list
 
 
 def get_source(url):
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=3)
         response.encoding = 'utf-8'
         return response.text
     except Exception as e:
-        print(e)
+        return "获取失败"
 
 
 if __name__ == '__main__':
