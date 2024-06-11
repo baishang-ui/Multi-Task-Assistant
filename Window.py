@@ -12,7 +12,7 @@ from qfluentwidgets import (NavigationItemPosition, MessageBox,
                             MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
                             PushButton, ComboBox, Theme, setTheme, setThemeColor)
 
-import utils
+import Utils
 from GetPhotoFromInternet import get_photo_from_internet
 from GetWeather import get_weather_data
 from MUIElements import *
