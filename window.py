@@ -32,12 +32,30 @@ class Window(MSFluentWindow):
     def __init__(self):
         super().__init__()
         # create sub interface
+
+        self.layout_app_card2 = None
+        self.app_card2 = None
+        self.card1_info_card4 = None
+        self.card1_info_card3 = None
+        self.card1_info_card2 = None
+        self.card1_info_card1 = None
+        self.layout_home_card1_ava_card3 = None
+        self.layout_home_card1_ava_card2 = None
+        self.layout_home_card1_ava_card4 = None
+        self.card1_ava_card4 = None
+        self.card1_ava_card3 = None
+        self.card1_ava_card2 = None
+        self.ava4 = None
+        self.ava3 = None
+        self.ava2 = None
+        self.ava1 = None
         self.weather_position = ""
-        self.card2_weather_card_label1 = BodyLabel()
+        self.card2_weather_card_label1 = None
         self.weather_data = {}
-        self.home_weather_card_combobox = ComboBox()
+        self.home_weather_card_combobox = None
         self.resource_ava = utils.get_path("resource/ava.png")
         self.resource_logo = utils.get_path("resource/logo.png")
+        self.resource_home_p = utils.get_path("resource/home.png")
         self.calc_time = 300
         self.system_timer = None
         self.layout_app_card1 = None
@@ -50,44 +68,41 @@ class Window(MSFluentWindow):
         self.progress_circle = None
         self.time_count = 0
         self.timer_start_button_flag = True
-        self.card1_info_card = None
-        self.layout_home_card1_info_card = None
-        self.info = None
-        self.extend_card2_tip = BodyLabel()
-        self.layout_home_card1 = MFLayout(None)
-        self.layout_card3 = MFLayout(None)
-        self.home_card3 = MCardWidget()
-        self.layout_home_card1_ava_card1 = MFLayout(None)
-        self.card1_ava_card1 = MCardWidget()
-        self.home_card1 = MCardWidget()
-        self.ava = AvatarWidget()
-        self.layout_home_card2 = MFLayout(None)
-        self.home_card2 = MCardWidget()
+        self.extend_card2_tip = None
+        self.layout_home_card1 = None
+        self.layout_card3 = None
+        self.home_card3 = None
+        self.layout_home_card1_ava_card1 = None
+        self.card1_ava_card1 = None
+        self.home_card1 = None
+        self.ava = None
+        self.layout_home_card2 = None
+        self.home_card2 = None
         self.home_photo_show = None
         if not os.path.exists("Texture"):
             os.makedirs("Texture")
         self.current_dir = os.getcwd() + "\\Texture\\"
         self.extend_slider_value = 0.0
-        self.extend_slider = Slider()
-        self.extend_combobox = ComboBox()
+        self.extend_slider = None
+        self.extend_combobox = None
         self.pixmap_type = "旋转"
-        self.extend_card1_layout = MFLayout(None)
-        self.extend_start_button = PushButton()
-        self.extend_card1 = MCardWidget()
-        self.extend_card2_layout = MFLayout(None)
-        self.extend_card2 = MCardWidget()
+        self.extend_card1_layout = None
+        self.extend_start_button = None
+        self.extend_card1 = None
+        self.extend_card2_layout = None
+        self.extend_card2 = None
         self.pix = QPixmap(self.resource_ava)
         self.Font = QFont("Microsoft YaHei", 14, QFont.Bold)
-        self.pixmap = PixmapLabel()
+        self.pixmap = None
         self.file_dir = ""
-        self.extend_drag_edit = MLineEdit()
-        self.layout_home_card2_weather_card = MFLayout(None)
-        self.card2_weather_card_label3 = BodyLabel()
-        self.card2_weather_card_label4 = BodyLabel()
-        self.card2_weather_card = MCardWidget()
-        self.card2_weather_card_label2 = BodyLabel()
-        self.home_card2 = MCardWidget()
-        self.layout_home_card2 = MCardWidget()
+        self.extend_drag_edit = None
+        self.layout_home_card2_weather_card = None
+        self.card2_weather_card_label3 = None
+        self.card2_weather_card_label4 = None
+        self.card2_weather_card = None
+        self.card2_weather_card_label2 = None
+        self.home_card2 = None
+        self.layout_home_card2 = None
         self.start_animation_alpha = None
         self.start_animation_pos = None
         self.homeInterface = Widget('home', self)
@@ -194,7 +209,7 @@ class Window(MSFluentWindow):
         self.navigationInterface.setCurrentItem(self.homeInterface.objectName())
 
     def initWindow(self):
-        self.resize(900,600)
+        self.resize(1077, 761)
         self.setWindowIcon(QIcon(self.resource_logo))
         self.setWindowTitle('Main Window')
         desktop = QApplication.desktop().availableGeometry()
@@ -212,27 +227,31 @@ class Window(MSFluentWindow):
         # 创建第一个大卡片存放信息卡片
         self.home_card1 = MCardWidget(self.homeInterface)
         self.layout_home_card1 = MQGridLayout(self.home_card1)
-        self.layout_home_card1.setAlignment(Qt.AlignCenter)
+       # self.layout_home_card1.setAlignment(Qt.AlignCenter)
         # 设置头像卡片的布局
-        self.ava1 = AvatarWidget(self.resource_ava)
+        self.ava1 = AvatarWidget(
+            get_photo_from_internet("https://i0.hdslb.com/bfs/article/acbdf855c4d732ec9c84ed4e9719fd75188801893.jpg"))
         self.card1_ava_card1 = MCardWidget()
         self.layout_home_card1_ava_card1 = MQGridLayout(self.card1_ava_card1)
         self.layout_home_card1_ava_card1.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card1.addWidget(self.ava1)
 
-        self.ava2 = AvatarWidget(get_photo_from_internet("https://t.alcy.cc/fj/"))
+        self.ava2 = AvatarWidget(
+            get_photo_from_internet("https://i0.hdslb.com/bfs/article/f6e5c5a71e735d0affe2e1550c89e922188801893.jpg"))
         self.card1_ava_card2 = MCardWidget()
         self.layout_home_card1_ava_card2 = MQGridLayout(self.card1_ava_card2)
         self.layout_home_card1_ava_card2.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card2.addWidget(self.ava2)
 
-        self.ava3 = AvatarWidget(get_photo_from_internet("https://t.alcy.cc/fj/"))
+        self.ava3 = AvatarWidget(
+            get_photo_from_internet("https://i0.hdslb.com/bfs/article/a59d70a80efe44a6c5ca17e8e4d34375188801893.jpg"))
         self.card1_ava_card3 = MCardWidget()
         self.layout_home_card1_ava_card3 = MQGridLayout(self.card1_ava_card3)
         self.layout_home_card1_ava_card3.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card3.addWidget(self.ava3)
 
-        self.ava4 = AvatarWidget(get_photo_from_internet("https://t.alcy.cc/fj/"))
+        self.ava4 = AvatarWidget(
+            get_photo_from_internet("https://i0.hdslb.com/bfs/article/3474819e8223a34e7b525be138a74cc8188801893.jpg"))
         self.card1_ava_card4 = MCardWidget()
         self.layout_home_card1_ava_card4 = MQGridLayout(self.card1_ava_card4)
         self.layout_home_card1_ava_card4.setAlignment(Qt.AlignCenter)
@@ -261,11 +280,10 @@ class Window(MSFluentWindow):
         # 创建第二个大卡片存放天气卡片
         self.home_card2 = MCardWidget()
         self.layout_home_card2 = MQGridLayout(self.home_card2)
-        self.home_card2.clicked.connect(lambda: self.show_info_bar("Hello World"))
+        self.home_card2.clicked.connect(lambda: print(self.width(),self.height()))
 
         # 获取临沂天气
         all_weather = get_weather_data()
-        init_weather_data = all_weather[0]
         self.weather_data = {}
         stands = []
         for i in range(len(all_weather)):
@@ -284,22 +302,18 @@ class Window(MSFluentWindow):
         self.layout_home_card2_weather_card = MFLayout(self.card2_weather_card)
 
         # 添加地名到天气卡片
-        self.card2_weather_card_label1 = BodyLabel()
-        self.card2_weather_card_label1.setText("🟡城市->" + "")
+        self.card2_weather_card_label1 = MDescriptionCard("🟡城市名称", "未选择")
         self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label1)
         # 添加天气到天气卡片
-        self.card2_weather_card_label2 = BodyLabel()
-        self.card2_weather_card_label2.setText("🟡天气->" + "未找到")
+        self.card2_weather_card_label2 = MDescriptionCard("🟡天气状况", "未找到")
         self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label2)
 
         # 添加最高温到天气卡片
-        self.card2_weather_card_label3 = BodyLabel()
-        self.card2_weather_card_label3.setText("🟡最高温->" + "未找到")
+        self.card2_weather_card_label3 = MDescriptionCard("🟡最高气温", "未找到")
         self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label3)
 
         # 添加最低温到天气卡片
-        self.card2_weather_card_label4 = BodyLabel()
-        self.card2_weather_card_label4.setText("🟡最低温->" + "未找到")
+        self.card2_weather_card_label4 = MDescriptionCard("🟡最低气温", "未找到")
         self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label4)
         # 添加天气卡片到第二个大卡片
         self.layout_home_card2.addWidget(self.home_weather_card_combobox)
@@ -308,17 +322,17 @@ class Window(MSFluentWindow):
         # 创建第三个大卡片存放图片卡片一言卡片
         self.home_card3 = MCardWidget()
         self.layout_card3 = MFLayout(self.home_card3)
-        qpix = get_photo_from_internet("https://t.alcy.cc/fj/")
+        qpix = 1  # get_photo_from_internet("https://t.alcy.cc/fj/")
         image_label = MImageLabel()
-        image_label.setImage(qpix)
-        image_label.scaledToHeight(200)
+        image_label.setImage(self.resource_home_p)
+        image_label.scaledToWidth(580)
 
         # 添加图片卡片到第三个大卡片
         self.layout_card3.addWidget(image_label)
         # 添加三个到主页面
-        layout.addWidget(self.home_card3,0,0,1,1)
-        layout.addWidget(self.home_card2,0,1,1,1)
-        layout.addWidget(self.home_card1,1,0,1,2)
+        layout.addWidget(self.home_card3, 0, 0, 1, 1)
+        layout.addWidget(self.home_card2, 0, 1, 1, 1)
+        layout.addWidget(self.home_card1, 1, 0, 1, 2)
 
     def initAppInterface(self):
         layout = MQGridLayout(self.appInterface)
@@ -363,8 +377,9 @@ class Window(MSFluentWindow):
         self.layout_app_card1.addWidget(self.timer_start_button, 1, 2)
         self.layout_app_card2.addWidget(self.progress_circle, 2, 2)
 
-        layout.addWidget(self.app_card1,0,0)
-        layout.addWidget(self.app_card2,0,1)
+        layout.addWidget(self.app_card1, 0, 0)
+        layout.addWidget(self.app_card2, 0, 1)
+
     def initExtendInterface(self):
         layout = MQGridLayout(self.extendInterface)
         layout.setAlignment(Qt.AlignTop)
@@ -544,25 +559,23 @@ class Window(MSFluentWindow):
         res = self.home_weather_card_combobox.text()
         # self.show_info_bar(f"{inspect.stack()[0][3]} -> {res}")
         self.weather_position = res
+
         if len(self.weather_position) == 0:
             return
         if '\u4e00' <= self.weather_position[0] <= '\u9fff':
             try:
-                self.card2_weather_card_label1.setText("🟡城市->" + self.weather_position)
-                self.card2_weather_card_label2.setText("🟡天气->" + self.weather_data[res][0])
-                self.card2_weather_card_label3.setText(
-                    self.weather_data[res][1] == '-' and "🟡当前->夜间" or ("🟡最高温->" + self.weather_data[res][1]))
-                self.card2_weather_card_label4.setText("🟡最低温->" + self.weather_data[res][2])
-            except ValueError as e:
-                self.card2_weather_card_label1.setText("🟡城市->" + "")
-                self.card2_weather_card_label2.setText("🟡天气->" + "未找到")
-                self.card2_weather_card_label3.setText("🟡最高温->" + "未找到")
-                self.card2_weather_card_label4.setText("🟡最低温->" + "未找到")
-        else:
-            self.card2_weather_card_label1.setText("🟡城市->" + "")
-            self.card2_weather_card_label2.setText("🟡天气->" + "未找到")
-            self.card2_weather_card_label3.setText("🟡最高温->" + "未找到")
-            self.card2_weather_card_label4.setText("🟡最低温->" + "未找到")
+                self.card2_weather_card_label1.setDes(self.weather_position)
+                self.card2_weather_card_label2.setDes(self.weather_data[res][0])
+                self.card2_weather_card_label3.setDes(
+                    self.weather_data[res][1] == '-' and "🟡当前时段" or "🟡最高气温")
+                self.card2_weather_card_label3.setDes(
+                    self.weather_data[res][1] == '-' and "夜间" or self.weather_data[res][1])
+                self.card2_weather_card_label4.setDes(self.weather_data[res][2])
+            except Exception as e:
+                self.card2_weather_card_label1.setDes("未选择")
+                self.card2_weather_card_label2.setDes("未找到")
+                self.card2_weather_card_label3.setDes("未找到")
+                self.card2_weather_card_label4.setDes("未找到")
 
     def extend_get_slider(self):
         res = self.extend_slider.value() / 100

@@ -96,17 +96,20 @@ class MDescriptionCard(HeaderCardWidget):
 
     def __init__(self, title="描述", des="", parent=None):
         super().__init__(parent)
-        self.descriptionLabel = BodyLabel(des, self)
         super().setBorderRadius(20)
+        self.descriptionLabel = BodyLabel(des, self)
         self.descriptionLabel.setWordWrap(False)
+        self.viewLayout.setAlignment(Qt.AlignCenter)
         self.viewLayout.addWidget(self.descriptionLabel)
         self.setTitle(title)
 
+    def setDes(self, des):
+        self.descriptionLabel.setText(des)
 
 class MImageLabel(ImageLabel):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        super().setBorderRadius(20, 20, 20, 20)
+        super().setBorderRadius(14, 14, 14, 14)
 
 
 class MTable(QWidget):
