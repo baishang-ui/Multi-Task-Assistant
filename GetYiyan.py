@@ -1,10 +1,4 @@
 import requests
-from PyQt5.QtGui import QPixmap
-
-from GetWeather import get_source
-import json
-from PIL import Image
-import io
 
 
 def get_yiyan() -> str:

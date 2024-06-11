@@ -1,17 +1,17 @@
 # coding:utf-8
-import inspect
 import os
 
 from PIL import Image, ImageFilter
 from PyQt5 import QtCore
-from PyQt5.QtCore import QUrl, QPoint, QRect, QSize, QTime, QTimer
+from PyQt5.QtCore import QUrl, QPoint, QTime, QTimer
 from PyQt5.QtGui import QIcon, QDesktopServices, QFont
-from PyQt5.QtWidgets import QApplication, QWidget, QCompleter
+from PyQt5.QtWidgets import QApplication, QCompleter
 from qfluentwidgets import FluentIcon as ficon, PixmapLabel, Slider, FlyoutView, Flyout, FlyoutAnimationType, \
     TimePicker, ProgressRing, SearchLineEdit
 from qfluentwidgets import (NavigationItemPosition, MessageBox,
                             MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
                             PushButton, ComboBox, Theme, setTheme, setThemeColor)
+
 import utils
 from GetPhotoFromInternet import get_photo_from_internet
 from GetWeather import get_weather_data

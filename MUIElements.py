@@ -1,15 +1,12 @@
-import sys
 from pathlib import Path
 
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QTableWidgetItem, QStyleOptionViewItem, QGridLayout
-from qfluentwidgets import LineEdit, ExpandLayout, ElevatedCardWidget, ImageLabel, CaptionLabel, HeaderCardWidget, \
-    BodyLabel, MSFluentTitleBar, isDarkTheme, TableItemDelegate, TableWidget
-from PyQt5.QtGui import QColor, QPainterPath, QPainter, QPixmap
-from qfluentwidgets import CardWidget
-from PyQt5.QtCore import QEasingCurve, Qt, QModelIndex
-from qfluentwidgets import FlowLayout
 from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve
-from qfluentwidgets.components.widgets.acrylic_label import AcrylicLabel
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QTableWidgetItem, QGridLayout
+from qfluentwidgets import CardWidget
+from qfluentwidgets import FlowLayout
+from qfluentwidgets import LineEdit, ExpandLayout, ElevatedCardWidget, ImageLabel, CaptionLabel, HeaderCardWidget, \
+    BodyLabel, TableWidget
 
 
 class MLineEdit(LineEdit):
