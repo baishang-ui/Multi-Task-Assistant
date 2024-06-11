@@ -285,24 +285,22 @@ class Window(MSFluentWindow):
 
         # 添加地名到天气卡片
         self.card2_weather_card_label1 = BodyLabel()
-        self.card2_weather_card_label1.setText("🟡城市->" + self.weather_position)
+        self.card2_weather_card_label1.setText("🟡城市->" + "")
         self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label1)
         # 添加天气到天气卡片
         self.card2_weather_card_label2 = BodyLabel()
-        self.card2_weather_card_label2.setText("🟡天气->" + init_weather_data[1])
+        self.card2_weather_card_label2.setText("🟡天气->" + "未找到")
         self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label2)
 
         # 添加最高温到天气卡片
         self.card2_weather_card_label3 = BodyLabel()
-        self.card2_weather_card_label3.setText(
-            init_weather_data[2] == '-' and "🟡当前->夜间" or ("🟡最高温->" + init_weather_data[2]))
+        self.card2_weather_card_label3.setText("🟡最高温->" + "未找到")
         self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label3)
 
         # 添加最低温到天气卡片
         self.card2_weather_card_label4 = BodyLabel()
-        self.card2_weather_card_label4.setText("🟡最低温->" + init_weather_data[3])
+        self.card2_weather_card_label4.setText("🟡最低温->" + "未找到")
         self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label4)
-
         # 添加天气卡片到第二个大卡片
         self.layout_home_card2.addWidget(self.home_weather_card_combobox)
         self.layout_home_card2.addWidget(self.card2_weather_card)
