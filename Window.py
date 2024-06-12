@@ -8,7 +8,7 @@ from PyQt5.QtCore import QUrl, QPoint, QTime, QTimer
 from PyQt5.QtGui import QIcon, QDesktopServices, QFont, QPixmap
 from PyQt5.QtWidgets import QApplication, QCompleter
 from qfluentwidgets import FluentIcon as ficon, PixmapLabel, Slider, FlyoutView, Flyout, FlyoutAnimationType, \
-    TimePicker, ProgressRing, SearchLineEdit, SimpleCardWidget
+    TimePicker, ProgressRing
 from qfluentwidgets import (NavigationItemPosition, MessageBox,
                             MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
                             Theme, setTheme, setThemeColor)
@@ -295,7 +295,7 @@ class Window(MSFluentWindow):
         for i in range(len(self.all_weather)):
             self.weather_data[self.all_weather[i][0]] = (self.all_weather[i][1:])
             stands.append(self.all_weather[i][0])
-        self.home_weather_card_combobox = SearchLineEdit()
+        self.home_weather_card_combobox = MSearchLineEdit()
         completer = QCompleter(stands, self.home_weather_card_combobox)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
         completer.setMaxVisibleItems(10)

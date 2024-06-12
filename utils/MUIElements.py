@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QTableWidgetItem, QGridLayout, QGraphicsBlurEffect, \
     QPushButton
-from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox
+from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit
 from qfluentwidgets import FlowLayout
 from qfluentwidgets import LineEdit, ExpandLayout, ElevatedCardWidget, ImageLabel, CaptionLabel, HeaderCardWidget, \
     BodyLabel, TableWidget
@@ -40,10 +40,19 @@ class MComboBox(ComboBox):
         self.qss = 'ComboBox{border-radius: 10px}'
         setCustomStyleSheet(self, self.qss, self.qss)
 
+
+class MSearchLineEdit(SearchLineEdit):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.qss = 'LineEdit{border-radius: 10px}'
+        setCustomStyleSheet(self, self.qss, self.qss)
+
+
 class MCardWidget(CardWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         super().setBorderRadius(20)
+
 
 class MSimpleCardWidget(SimpleCardWidget):
     def __init__(self, parent=None):
