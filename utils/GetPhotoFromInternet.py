@@ -2,7 +2,7 @@ import requests
 from PyQt5.QtGui import QPixmap
 
 
-def get_photo_from_internet(url: str) -> None:
+def get_photo_from_internet(url: str) -> QPixmap | QPixmap | None:
     random_pic = url
     try:
         req = requests.get(random_pic, timeout=3)

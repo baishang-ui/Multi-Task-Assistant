@@ -1,4 +1,7 @@
 # https://blog.csdn.net/Claire_chen_jia/article/details/106281498
+import json
+from typing import Any
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -31,16 +34,16 @@ def get_info(source):
                 weather = tds[-4]
                 weather_ = list(weather.stripped_strings)[0]
                 # test
-                item = [city, weather_, temp_high, temp_low]
+                item = [city+"市", weather_, temp_high+"℃", temp_low+"℃"]
                 items.append(item)
         return items
     except Exception as e:
         print(e)
-        items = [["1", "2", "3", "4"]]
+        items = [["error"]]
         return items
 
 
-def get_weather_data():
+def get_weather_data() -> str | list[Any]:
     info_list = []
     dq_names = ['hb', 'db', 'hd', 'hz', 'hn', 'xb', 'xn', 'gat']
     for dq_name in dq_names:
@@ -53,7 +56,7 @@ def get_weather_data():
     return info_list
 
 
-def get_source(url):
+def get_source(url) -> str:
     try:
         response = requests.get(url, timeout=3)
         response.encoding = 'utf-8'
@@ -62,6 +65,33 @@ def get_source(url):
         return "获取失败"
 
 
+def re_get_weather(city_name: str, city_codew_dir):
+    # api地址
+    url = 'http://t.weather.sojson.com/api/weather/city/'
+
+    # 读取json文件
+    f = open(city_codew_dir, 'rb')
+
+    # 使用json模块的load方法加载json数据，返回一个字典
+    cities = json.load(f)
+
+    # 通过城市的中文获取城市代码
+    city = cities.get(city_name)
+
+    # 网络请求，传入请求api+城市代码
+    response = requests.get(url + city)
+
+    # 将数据以json形式返回，这个d就是返回的json数据
+    d = response.json()
+
+    # 当返回状态码为200，输出天气状况
+    if d['status'] == 200:
+        return [d["cityInfo"]["city"], d["data"]["forecast"][0]["type"], d["data"]["forecast"][0]["high"][3:],
+                d["data"]["forecast"][0]["low"][3:]]
+    else:
+        return [["error"],]
+
 if __name__ == '__main__':
     wea = get_weather_data()
     print(wea)
+

@@ -53,3 +53,9 @@ def creat_file_dir():
     if not os.path.exists("Texture"):
         os.makedirs("Texture")
 
+
+def safe_call(fn, *args, **kwargs):
+    try:
+        fn(*args, **kwargs)
+    except Exception as e:
+        print(str(e))

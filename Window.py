@@ -5,17 +5,17 @@ import sys
 from PIL import Image, ImageFilter
 from PyQt5 import QtCore
 from PyQt5.QtCore import QUrl, QPoint, QTime, QTimer
-from PyQt5.QtGui import QIcon, QDesktopServices, QFont, QPixmap
-from PyQt5.QtWidgets import QApplication, QCompleter
-from qfluentwidgets import FluentIcon as ficon, PixmapLabel, Slider, FlyoutView, Flyout, FlyoutAnimationType, \
-    TimePicker, ProgressRing
+from PyQt5.QtGui import QIcon, QDesktopServices, QFont
+from PyQt5.QtWidgets import QApplication, QCompleter, QWidget
+from qfluentwidgets import FluentIcon as ficon, FlyoutView, Flyout, FlyoutAnimationType, \
+    TimePicker, ProgressRing, Slider
 from qfluentwidgets import (NavigationItemPosition, MessageBox,
                             MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
                             Theme, setTheme, setThemeColor)
 
 from utils import Utils
-from utils.GetPhotoFromInternet import get_photo_from_internet
-from utils.GetWeather import get_weather_data
+from utils.GetPhotoFromInternet import *
+from utils.GetWeather import *
 from utils.MUIElements import *
 
 
@@ -31,7 +31,9 @@ class Window(MSFluentWindow):
     def __init__(self):
         super().__init__()
         # create sub interface
-        self.windowEffect.setMicaEffect(self.winId())
+        self._extend_layout = None
+        self.home_weather_re_get_button = None
+        self.extend_slider_label = None
         setTheme(Theme.AUTO)
         setThemeColor("#b9beed")
         self.all_weather = None
@@ -57,6 +59,7 @@ class Window(MSFluentWindow):
         self.weather_data = {}
         self.home_weather_card_combobox = None
         self.resource_ava = Utils.get_path("resource/ava.png")
+        self.city_code = Utils.get_path("resource/city_to_code.json")
         self.resource_logo = Utils.get_path("resource/logo.png")
         self.resource_home_p = Utils.get_path("resource/home.png")
         self.calc_time = 300
@@ -211,7 +214,7 @@ class Window(MSFluentWindow):
         self.navigationInterface.setCurrentItem(self.homeInterface.objectName())
 
     def initWindow(self):
-        self.resize(1077, 761)
+        self.resize(956, 674)
         self.setWindowIcon(QIcon(self.resource_logo))
         self.setWindowTitle('Main Window')
         desktop = QApplication.desktop().availableGeometry()
@@ -224,7 +227,6 @@ class Window(MSFluentWindow):
         self.start_animation_alpha.start()
 
     def initHomeInterface(self):
-
         layout = MQGridLayout(self.homeInterface)
         # 创建第一个大卡片存放信息卡片
         self.home_card1 = MSimpleCardWidget()
@@ -301,44 +303,42 @@ class Window(MSFluentWindow):
         completer.setMaxVisibleItems(10)
         self.home_weather_card_combobox.setCompleter(completer)
         self.home_weather_card_combobox.textChanged.connect(self.weather_position_get)
-        # 创建天气卡片基于第二个大卡片
-        self.card2_weather_card = MCardWidget()
+        self.home_weather_re_get_button = MPushButton("重新获取")
+        self.home_weather_re_get_button.clicked.connect(self.re_get_weather_button)
+        # 添加城市选择到第二个大卡片
+        self.layout_home_card2.addWidget(self.home_weather_card_combobox, 0, 0, 1, 2)
+        self.layout_home_card2.addWidget(self.home_weather_re_get_button, 1, 0, 1, 2)
 
-        # 设置天气卡片的布局
-        self.layout_home_card2_weather_card = MFLayout(self.card2_weather_card)
-
-        # 添加地名到天气卡片
+        # 添加地名到第二个大卡片
         self.card2_weather_card_label1 = MDescriptionCard((self.weather_state and "🗺️" or "⛔") + "城市名称", "未选择")
-        self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label1)
-        # 添加天气到天气卡片
+        self.layout_home_card2.addWidget(self.card2_weather_card_label1, 2, 0, 1, 1)
+        # 添加天气到第二个大卡片
         self.card2_weather_card_label2 = MDescriptionCard((self.weather_state and "☁️" or "⛔") + "天气状况", "未找到")
-        self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label2)
+        self.layout_home_card2.addWidget(self.card2_weather_card_label2, 2, 1, 1, 1)
 
-        # 添加最高温到天气卡片
+        # 添加最高温到第二个大卡片
         self.card2_weather_card_label3 = MDescriptionCard((self.weather_state and "🌡️" or "⛔") + "最高气温", "未找到")
-        self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label3)
+        self.layout_home_card2.addWidget(self.card2_weather_card_label3, 3, 0, 1, 1)
 
-        # 添加最低温到天气卡片
+        # 添加最低温到第二个大卡片
         self.card2_weather_card_label4 = MDescriptionCard((self.weather_state and "🌡️" or "⛔") + "最低气温", "未找到")
-        self.layout_home_card2_weather_card.addWidget(self.card2_weather_card_label4)
-        # 添加天气卡片到第二个大卡片
-        self.layout_home_card2.addWidget(self.home_weather_card_combobox)
-        self.layout_home_card2.addWidget(self.card2_weather_card)
+        self.layout_home_card2.addWidget(self.card2_weather_card_label4, 3, 1, 1, 1)
 
-        # 创建第三个大卡片存放图片卡片一言卡片
+        # 创建第三个大卡片存放图片卡片
         self.home_card3 = MSimpleCardWidget()
-        self.layout_card3 = MFLayout(self.home_card3)
+        self.layout_card3 = MQGridLayout(self.home_card3)
         qpix = get_photo_from_internet("https://t.alcy.cc/fj/")
         image_label = MImageLabel()
         image_label.setImage(qpix is None and self.resource_home_p or qpix.scaled(1920, 1080))
-        image_label.scaledToWidth(580)
+        image_label.scaledToHeight(318)
 
         # 添加图片卡片到第三个大卡片
         self.layout_card3.addWidget(image_label)
+
         # 添加三个到主页面
-        layout.addWidget(self.home_card3, 0, 0, 1, 1)
-        layout.addWidget(self.home_card2, 0, 1, 1, 1)
-        layout.addWidget(self.home_card1, 1, 0, 1, 2)
+        layout.addWidget(self.home_card3, 0, 0, 1, 2)
+        layout.addWidget(self.home_card2, 0, 2, 1, 2)
+        layout.addWidget(self.home_card1, 1, 0, 1, 4)
 
     def initAppInterface(self):
         layout = MQGridLayout(self.appInterface)
@@ -388,10 +388,11 @@ class Window(MSFluentWindow):
         layout.addWidget(self.app_card2, 0, 1)
 
     def initExtendInterface(self):
-        layout = MQGridLayout(self.extendInterface)
-        layout.setAlignment(Qt.AlignTop)
+        self._extend_layout = MQGridLayout(self.extendInterface)
+        self._extend_layout.setAlignment(Qt.AlignTop)
         self.extend_card1 = MSimpleCardWidget()
         self.extend_card1_layout = MFLayout(self.extend_card1)
+        self.extend_card1_layout.setAlignment(Qt.AlignBottom)
         self.extend_drag_edit = MLineEdit()
         self.extend_drag_edit.setFixedSize(200, 32)
         self.extend_drag_edit.setPlaceholderText("拖拽到此或者输入路径")
@@ -400,27 +401,30 @@ class Window(MSFluentWindow):
 
         self.extend_start_button = MPushButton()
         self.extend_start_button.setText("开始")
-        self.extend_card1_layout.addWidget(self.extend_start_button)
+
         self.extend_combobox = MComboBox()
         items = ['旋转', '缩小', '模糊', '轮廓', "平滑", "锐化", "边界", "边界加强", "浮雕", "细节"]
         self.extend_combobox.addItems(items)
         self.extend_combobox.currentIndexChanged.connect(self.pixmap_get_type)
-        self.extend_card1_layout.insertWidget(1, self.extend_combobox)
+        self.extend_card1_layout.addWidget(self.extend_combobox)
         self.extend_slider = Slider(Qt.Horizontal)
-        self.extend_slider.setFixedWidth(200)
+        self.extend_slider_label = BodyLabel()
+        self.extend_slider.setFixedWidth(180)
+        self.extend_slider.setRange(0, 100)
         self.extend_slider.valueChanged.connect(self.extend_get_slider)
         self.extend_card1_layout.addWidget(self.extend_slider)
-
+        self.extend_card1_layout.addWidget(self.extend_slider_label)
+        self.extend_card1_layout.addWidget(self.extend_start_button)
         self.extend_card2 = MSimpleCardWidget()
         self.extend_card2_layout = MFLayout(self.extend_card2)
         self.extend_card2_tip = BodyLabel()
         self.extend_card2_tip.setText("图片预览")
         self.extend_card2_layout.addWidget(self.extend_card2_tip)
-        self.pixmap = PixmapLabel()
+        self.pixmap = MImageLabel()
         self.extend_drag_edit.textChanged.connect(self.file_dir_get)
         self.extend_start_button.clicked.connect(self.handle_pixmap)
-        layout.addWidget(self.extend_card1, 0, 0)
-        layout.addWidget(self.extend_card2, 0, 1)
+        self._extend_layout.addWidget(self.extend_card1, 0, 0, 1, 2)
+        self._extend_layout.addWidget(self.extend_card2, 0, 2, 1, 1)
 
     def get_calc_time(self, time: str):
         try:
@@ -431,7 +435,7 @@ class Window(MSFluentWindow):
 
     def timer_button_action(self):
         self.timer_start_button_flag = not self.timer_start_button_flag
-
+        print(self.width(), self.height())
         if self.timer_start_button_flag:
             self.timer_start_button.setText("开始计时")
             try:
@@ -463,7 +467,7 @@ class Window(MSFluentWindow):
         res = self.extend_drag_edit.text()
         # self.show_info_bar(f"{inspect.stack()[0][3]} -> {res}")
         self.file_dir = self.extend_drag_edit.text()
-        if len(res.split("/")) > 2:
+        if len(res.split("/")) >= 2:
             try:
                 self.extend_card2_layout.removeWidget(self.pixmap)
                 self.pix = QPixmap(self.file_dir)
@@ -577,8 +581,24 @@ class Window(MSFluentWindow):
                 self.card2_weather_card_label3.setTitle(
                     self.weather_data[res][1] == '-' and "🕰️当前时段" or "🌡️最高气温")
                 self.card2_weather_card_label3.setDes(
-                    self.weather_data[res][1] == '-' and "⭐夜间" or self.weather_data[res][1] + "℃")
-                self.card2_weather_card_label4.setDes(self.weather_data[res][2] + "℃")
+                    self.weather_data[res][1] == '-' and "⭐夜间" or self.weather_data[res][1])
+                self.card2_weather_card_label4.setDes(self.weather_data[res][2])
+            except Exception as e:
+                self.card2_weather_card_label1.setDes("未选择")
+                self.card2_weather_card_label2.setDes("未找到")
+                self.card2_weather_card_label3.setDes("未找到")
+                self.card2_weather_card_label4.setDes("未找到")
+
+    def re_get_weather_button(self):
+        if len(self.weather_position) == 0:
+            return
+        if '\u4e00' <= self.weather_position[0] <= '\u9fff':
+            try:
+                data = re_get_weather(self.weather_position[:-1], self.city_code)
+                self.card2_weather_card_label1.setDes(data[0])
+                self.card2_weather_card_label2.setDes(data[1])
+                self.card2_weather_card_label3.setDes(data[2])
+                self.card2_weather_card_label4.setDes(data[3])
             except Exception as e:
                 self.card2_weather_card_label1.setDes("未选择")
                 self.card2_weather_card_label2.setDes("未找到")
@@ -587,6 +607,7 @@ class Window(MSFluentWindow):
 
     def extend_get_slider(self):
         res = self.extend_slider.value() / 100
+        self.extend_slider_label.setText(str(self.extend_slider.value()) + "%")
         # self.show_info_bar(f"{inspect.stack()[0][3]} -> {res}")
         self.extend_slider_value = res
 

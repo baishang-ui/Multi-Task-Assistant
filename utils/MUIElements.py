@@ -2,14 +2,11 @@ from pathlib import Path
 
 from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QColor
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QTableWidgetItem, QGridLayout, QGraphicsBlurEffect, \
-    QPushButton
+from PyQt5.QtWidgets import QVBoxLayout, QGridLayout
 from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit
 from qfluentwidgets import FlowLayout
 from qfluentwidgets import LineEdit, ExpandLayout, ElevatedCardWidget, ImageLabel, CaptionLabel, HeaderCardWidget, \
-    BodyLabel, TableWidget
-from qfluentwidgets.common.animation import DropShadowAnimation
+    BodyLabel
 
 
 class MLineEdit(LineEdit):
@@ -71,7 +68,7 @@ class MFLayout(FlowLayout):
 class MQGridLayout(QGridLayout):
     def __init__(self, to):
         super().__init__(to)
-        super().setContentsMargins(20, 20, 20, 20)
+        super().setContentsMargins(10, 10, 10, 10)
 
 
 class MExpandLayout(ExpandLayout):
