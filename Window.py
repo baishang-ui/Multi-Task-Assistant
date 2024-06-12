@@ -8,10 +8,10 @@ from PyQt5.QtCore import QUrl, QPoint, QTime, QTimer
 from PyQt5.QtGui import QIcon, QDesktopServices, QFont, QPixmap
 from PyQt5.QtWidgets import QApplication, QCompleter
 from qfluentwidgets import FluentIcon as ficon, PixmapLabel, Slider, FlyoutView, Flyout, FlyoutAnimationType, \
-    TimePicker, ProgressRing, SearchLineEdit
+    TimePicker, ProgressRing, SearchLineEdit, SimpleCardWidget
 from qfluentwidgets import (NavigationItemPosition, MessageBox,
                             MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
-                            PushButton, ComboBox, Theme, setTheme, setThemeColor)
+                            Theme, setTheme, setThemeColor)
 
 from utils import Utils
 from utils.GetPhotoFromInternet import get_photo_from_internet
@@ -23,8 +23,6 @@ class Widget(QWidget):
 
     def __init__(self, text: str, parent=None):
         super().__init__(parent=parent)
-        setTheme(Theme.DARK)
-        setThemeColor("#b9beed")
         # 必须给子界面设置全局唯一的对象名
         self.setObjectName(text.replace(' ', '-'))
 
@@ -33,7 +31,9 @@ class Window(MSFluentWindow):
     def __init__(self):
         super().__init__()
         # create sub interface
-
+        self.windowEffect.setMicaEffect(self.winId())
+        setTheme(Theme.AUTO)
+        setThemeColor("#b9beed")
         self.all_weather = None
         self.weather_state = False
         self.layout_app_card2 = None
@@ -227,7 +227,7 @@ class Window(MSFluentWindow):
 
         layout = MQGridLayout(self.homeInterface)
         # 创建第一个大卡片存放信息卡片
-        self.home_card1 = MCardWidget(self.homeInterface)
+        self.home_card1 = MSimpleCardWidget()
         self.layout_home_card1 = MQGridLayout(self.home_card1)
         # self.layout_home_card1.setAlignment(Qt.AlignCenter)
         # 设置头像卡片的布局
@@ -280,7 +280,7 @@ class Window(MSFluentWindow):
         self.layout_home_card1.addWidget(self.card1_info_card4, 1, 3)
 
         # 创建第二个大卡片存放天气卡片
-        self.home_card2 = MCardWidget()
+        self.home_card2 = MSimpleCardWidget()
         self.layout_home_card2 = MQGridLayout(self.home_card2)
         self.home_card2.clicked.connect(lambda: self.show_info_bar(self.width(), self.height()))
 
@@ -326,7 +326,7 @@ class Window(MSFluentWindow):
         self.layout_home_card2.addWidget(self.card2_weather_card)
 
         # 创建第三个大卡片存放图片卡片一言卡片
-        self.home_card3 = MCardWidget()
+        self.home_card3 = MSimpleCardWidget()
         self.layout_card3 = MFLayout(self.home_card3)
         qpix = get_photo_from_internet("https://t.alcy.cc/fj/")
         image_label = MImageLabel()
@@ -346,11 +346,11 @@ class Window(MSFluentWindow):
         self.system_timer = QtCore.QTimer()
         self.system_timer = QTimer(self.appInterface, timeout=self.run_timer)
 
-        self.app_card1 = MCardWidget()
+        self.app_card1 = MSimpleCardWidget()
         self.layout_app_card1 = MQGridLayout(self.app_card1)
         self.layout_app_card1.setAlignment(Qt.AlignTop)
 
-        self.app_card2 = MCardWidget()
+        self.app_card2 = MSimpleCardWidget()
         self.layout_app_card2 = MQGridLayout(self.app_card2)
         self.layout_app_card2.setAlignment(Qt.AlignCenter)
 
@@ -375,7 +375,8 @@ class Window(MSFluentWindow):
 
         # 时间发生改变
         self.timePicker.timeChanged.connect(lambda time: self.get_calc_time(time.toString()))
-        self.timer_start_button = PushButton("开始计时", self.app_card1)
+        self.timer_start_button = MPushButton("开始计时")
+
         self.timer_label1 = BodyLabel("定时时间选择:")
         self.timer_start_button.clicked.connect(self.timer_button_action)
         self.layout_app_card1.addWidget(self.timer_label1, 1, 0)
@@ -389,7 +390,7 @@ class Window(MSFluentWindow):
     def initExtendInterface(self):
         layout = MQGridLayout(self.extendInterface)
         layout.setAlignment(Qt.AlignTop)
-        self.extend_card1 = MCardWidget()
+        self.extend_card1 = MSimpleCardWidget()
         self.extend_card1_layout = MFLayout(self.extend_card1)
         self.extend_drag_edit = MLineEdit()
         self.extend_drag_edit.setFixedSize(200, 32)
@@ -397,10 +398,10 @@ class Window(MSFluentWindow):
         self.extend_drag_edit.setClearButtonEnabled(True)
         self.extend_card1_layout.addWidget(self.extend_drag_edit)
 
-        self.extend_start_button = PushButton()
+        self.extend_start_button = MPushButton()
         self.extend_start_button.setText("开始")
         self.extend_card1_layout.addWidget(self.extend_start_button)
-        self.extend_combobox = ComboBox()
+        self.extend_combobox = MComboBox()
         items = ['旋转', '缩小', '模糊', '轮廓', "平滑", "锐化", "边界", "边界加强", "浮雕", "细节"]
         self.extend_combobox.addItems(items)
         self.extend_combobox.currentIndexChanged.connect(self.pixmap_get_type)
@@ -410,7 +411,7 @@ class Window(MSFluentWindow):
         self.extend_slider.valueChanged.connect(self.extend_get_slider)
         self.extend_card1_layout.addWidget(self.extend_slider)
 
-        self.extend_card2 = MCardWidget()
+        self.extend_card2 = MSimpleCardWidget()
         self.extend_card2_layout = MFLayout(self.extend_card2)
         self.extend_card2_tip = BodyLabel()
         self.extend_card2_tip.setText("图片预览")

@@ -2,17 +2,21 @@ from pathlib import Path
 
 from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QTableWidgetItem, QGridLayout
-from qfluentwidgets import CardWidget
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QVBoxLayout, QWidget, QHBoxLayout, QTableWidgetItem, QGridLayout, QGraphicsBlurEffect, \
+    QPushButton
+from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox
 from qfluentwidgets import FlowLayout
 from qfluentwidgets import LineEdit, ExpandLayout, ElevatedCardWidget, ImageLabel, CaptionLabel, HeaderCardWidget, \
     BodyLabel, TableWidget
+from qfluentwidgets.common.animation import DropShadowAnimation
 
 
 class MLineEdit(LineEdit):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-
+        self.qss = 'LineEdit{border-radius: 10px}'
+        setCustomStyleSheet(self, self.qss, self.qss)
         self.setAcceptDrops(True)
 
     def dragEnterEvent(self, e):
@@ -30,7 +34,18 @@ class MLineEdit(LineEdit):
         self.setText(filePath)
 
 
+class MComboBox(ComboBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.qss = 'ComboBox{border-radius: 10px}'
+        setCustomStyleSheet(self, self.qss, self.qss)
+
 class MCardWidget(CardWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        super().setBorderRadius(20)
+
+class MSimpleCardWidget(SimpleCardWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         super().setBorderRadius(20)
@@ -103,45 +118,17 @@ class MDescriptionCard(HeaderCardWidget):
     def setDes(self, des):
         self.descriptionLabel.setText(des)
 
+
 class MImageLabel(ImageLabel):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         super().setBorderRadius(14, 14, 14, 14)
 
 
-class MTable(QWidget):
+class MPushButton(PushButton):
 
-    def __init__(self, title: list, data: list):
-        super().__init__()
-        # setTheme(Theme.DARK)
-
-        self.hBoxLayout = QHBoxLayout(self)
-        self.tableView = TableWidget(self)
-
-        # NOTE: use custom item delegate
-        # self.tableView.setItemDelegate(CustomTableItemDelegate(self.tableView))
-
-        # select row on right-click
-        # self.tableView.setSelectRightClickedRow(True)
-
-        # enable border
-        self.tableView.setBorderVisible(True)
-        self.tableView.setBorderRadius(8)
-
-        self.tableView.setWordWrap(False)
-        self.tableView.setRowCount(60)
-        self.tableView.setColumnCount(5)
-        dataInfos = data
-        dataInfos += dataInfos
-        for i, dataInfo in enumerate(dataInfos):
-            for j in range(5):
-                self.tableView.setItem(i, j, QTableWidgetItem(dataInfo[j]))
-
-        self.tableView.verticalHeader().hide()
-        self.tableView.setHorizontalHeaderLabels(title)
-        self.tableView.resizeColumnsToContents()
-        # self.tableView.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-        # self.tableView.setSortingEnabled(True)
-
-        self.hBoxLayout.setContentsMargins(50, 30, 50, 30)
-        self.hBoxLayout.addWidget(self.tableView)
+    def __init__(self, text=None, parent=None):
+        super().__init__(parent)
+        self.setText(text)
+        self.qss = 'PushButton{border-radius: 10px}'
+        setCustomStyleSheet(self, self.qss, self.qss)
