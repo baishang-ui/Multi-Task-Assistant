@@ -10,6 +10,13 @@ def time_to_seconds(d) -> int:
     return res
 
 
+def tenms_to_time(s):
+
+    m, s = divmod(s, 60)
+    h, m = divmod(m, 60)
+    return [h, m, s]
+
+
 class SecondsFormatter(PickerColumnFormatter):
     """ Seconds formatter """
 

@@ -7,7 +7,7 @@ from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomSt
 from qfluentwidgets import FlowLayout
 from qfluentwidgets import LineEdit, ExpandLayout, ElevatedCardWidget, ImageLabel, CaptionLabel, HeaderCardWidget, \
     BodyLabel
-
+from qfluentwidgets import FluentIcon as ficon
 
 class MLineEdit(LineEdit):
     def __init__(self, parent=None):
@@ -60,7 +60,7 @@ class MSimpleCardWidget(SimpleCardWidget):
 class MFLayout(FlowLayout):
     def __init__(self, to):
         super().__init__(to, needAni=True)
-        super().setAnimation(350, QEasingCurve.OutQuad)
+        super().setAnimation(650, QEasingCurve.InOutCubic)
         super().setContentsMargins(20, 20, 20, 20)
         super().setAlignment(Qt.AlignCenter)
 
@@ -133,8 +133,9 @@ class MImageLabel(ImageLabel):
 
 class MPushButton(PushButton):
 
-    def __init__(self, text=None, parent=None):
-        super().__init__(parent)
-        self.setText(text)
+    def __init__(self, text=None, icon=ficon.CHECKBOX, parent=None):
+        super().__init__(parent=parent)
         self.qss = 'PushButton{border-radius: 10px}'
         setCustomStyleSheet(self, self.qss, self.qss)
+        self.setText(text)
+        self.setIcon(icon)
