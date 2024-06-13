@@ -617,6 +617,7 @@ class Window(MSFluentWindow):
 
     def file_dir_get(self):
         res = self.extend_drag_edit.text()
+
         # self.show_info_bar(f"{inspect.stack()[0][3]} -> {res}")
         self.file_dir = self.extend_drag_edit.text()
         if len(res.split("/")) >= 2:
