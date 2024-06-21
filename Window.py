@@ -1,15 +1,14 @@
 # coding:utf-8
 import os
 import sys
-
 from PIL import Image, ImageFilter
-from PyQt5 import QtCore
-from PyQt5.QtCore import QUrl, QPoint, QTime, QTimer
-from PyQt5.QtGui import QIcon, QDesktopServices, QFont, QFontDatabase
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QUrl, QPoint, QTime, QTimer, QSize
+from PyQt5.QtGui import QIcon, QDesktopServices, QFont
 from PyQt5.QtWidgets import QApplication, QCompleter, QWidget
-from qfluentwidgets import FluentIcon as ficon, FlyoutView, Flyout, FlyoutAnimationType, \
-    TimePicker, ProgressRing, Slider, SwitchButton, IndeterminateProgressRing, ProgressBar, StrongBodyLabel, \
-    DisplayLabel, TitleLabel, SubtitleLabel
+from qfluentwidgets import FlyoutView, Flyout, FlyoutAnimationType, \
+    TimePicker, ProgressRing, Slider, SwitchButton, ProgressBar, StrongBodyLabel, \
+    SubtitleLabel
 from qfluentwidgets import (NavigationItemPosition, MessageBox,
                             MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
                             Theme, setTheme, setThemeColor)
@@ -21,8 +20,20 @@ from utils.MUIElements import *
 
 
 class Widget(QWidget):
+    """
+    Widget类继承自Qwidget，用于创建带有特定文本标签的界面元素。
+
+    参数:
+    - text: str，界面元素的文本标签。
+    - parent: QWidget，父窗口对象，默认为None。
+    """
 
     def __init__(self, text: str, parent=None):
+        """
+        初始化Widget对象。
+
+        设置对象名，基于传入的文本参数，将空格替换为连字符，以符合对象名的命名规则。
+        """
         super().__init__(parent=parent)
         # 必须给子界面设置全局唯一的对象名
         self.setObjectName(text.replace(' ', '-'))
@@ -31,6 +42,12 @@ class Widget(QWidget):
 class Window(MSFluentWindow):
     def __init__(self):
         super().__init__()
+
+        self.splashScreen = None
+        self.home_b_photo = None
+        self.splash = None
+        self.desktop = QApplication.desktop().availableGeometry()
+        self.pc_w, self.pc_h = self.desktop.width(), self.desktop.height()
         self.progress_circle_countdown = None
         self.countdown_pause_button = None
         self.countdown_label = SubtitleLabel()
@@ -68,6 +85,11 @@ class Window(MSFluentWindow):
         self.city_code = Utils.get_path("resource/city_to_code.json")
         self.resource_logo = Utils.get_path("resource/logo.png")
         self.resource_home_p = Utils.get_path("resource/home.png")
+        self.resource_gif1 = Utils.get_path("resource/1.gif")
+        self.a1 = QPixmap(self.resource_ava)
+        self.a2 = QPixmap(self.resource_ava)
+        self.a3 = QPixmap(self.resource_ava)
+        self.a4 = QPixmap(self.resource_ava)
         self.calc_time = 300
         self.system_timer = None
         self.layout_app_card1 = None
@@ -91,7 +113,7 @@ class Window(MSFluentWindow):
         self.layout_home_card2 = None
         self.home_card2 = None
         self.home_photo_show = None
-        Utils.creat_file_dir()
+        Utils.create_file_dir()
         self.current_dir = os.getcwd() + "\\Texture\\"
         self.extend_slider_value = 0.0
         self.extend_slider = Slider(None)
@@ -117,11 +139,21 @@ class Window(MSFluentWindow):
         self.homeInterface = Widget('home', self)
         self.appInterface = Widget('app', self)
         self.extendInterface = Widget('extend', self)
+
         self.initWindow()
-        self.initNavigation()
+        self.get_internet_data()
         self.initHomeInterface()
         self.initAppInterface()
         self.initExtendInterface()
+        self.initNavigation()
+        self.splashScreen.finish()
+        self.start_animation_pos = MAnimation(self, b'pos', QPoint(self.pc_w // 2 - self.width() // 2, self.pc_h + 46),
+                                              QPoint(self.pc_w // 2 - self.width() // 2,
+                                                     self.pc_h // 2 - self.height() // 2),
+                                              1100)
+        self.start_animation_pos.start()
+        self.start_animation_alpha = MAnimation(self, b'windowOpacity', 0, 1, 500)
+        self.start_animation_alpha.start()
 
     def initNavigation(self):
         self.addSubInterface(self.homeInterface, ficon.HOME, '主页', ficon.HOME_FILL)
@@ -144,14 +176,26 @@ class Window(MSFluentWindow):
         self.resize(977, 685)
         self.setWindowIcon(QIcon(self.resource_logo))
         self.setWindowTitle('Main Window')
-        desktop = QApplication.desktop().availableGeometry()
-        w, h = desktop.width(), desktop.height()
-        self.start_animation_pos = MAnimation(self, b'pos', QPoint(w // 2 - self.width() // 2, h + 46),
-                                              QPoint(w // 2 - self.width() // 2, h // 2 - self.height() // 2),
-                                              1100)
-        self.start_animation_pos.start()
-        self.start_animation_alpha = MAnimation(self, b'windowOpacity', 0, 1, 500)
-        self.start_animation_alpha.start()
+        self.desktop = QApplication.desktop().availableGeometry()
+        self.move(self.pc_w // 2 - self.width() // 2, self.pc_h // 2 - self.height() // 2)
+        self.splashScreen = SplashScreen(self.windowIcon(), self)
+        self.splashScreen.setIconSize(QSize(102, 102))
+        self.show()
+
+    def get_internet_data(self):
+        QApplication.processEvents()
+        self.a1 = get_photo_from_internet("https://i0.hdslb.com/bfs/article/acbdf855c4d732ec9c84ed4e9719fd75188801893"
+                                          ".jpg")
+
+        self.a2 = get_photo_from_internet("https://i0.hdslb.com/bfs/article/f6e5c5a71e735d0affe2e1550c89e922188801893"
+                                          ".jpg")
+
+        self.a3 = get_photo_from_internet("https://i0.hdslb.com/bfs/article/a59d70a80efe44a6c5ca17e8e4d34375188801893"
+                                          ".jpg")
+
+        self.a4 = get_photo_from_internet("https://i0.hdslb.com/bfs/article/3474819e8223a34e7b525be138a74cc8188801893"
+                                          ".jpg")
+        self.home_b_photo = get_photo_from_internet("https://t.alcy.cc/fj/")
 
     def initHomeInterface(self):
         layout = MQGridLayout(self.homeInterface)
@@ -160,29 +204,25 @@ class Window(MSFluentWindow):
         self.layout_home_card1 = MQGridLayout(self.home_card1)
         # self.layout_home_card1.setAlignment(Qt.AlignCenter)
         # 设置头像卡片的布局
-        self.ava1 = AvatarWidget(
-            get_photo_from_internet("https://i0.hdslb.com/bfs/article/acbdf855c4d732ec9c84ed4e9719fd75188801893.jpg"))
+        self.ava1 = AvatarWidget(self.a1)
         self.card1_ava_card1 = MCardWidget()
         self.layout_home_card1_ava_card1 = MQGridLayout(self.card1_ava_card1)
         self.layout_home_card1_ava_card1.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card1.addWidget(self.ava1)
 
-        self.ava2 = AvatarWidget(
-            get_photo_from_internet("https://i0.hdslb.com/bfs/article/f6e5c5a71e735d0affe2e1550c89e922188801893.jpg"))
+        self.ava2 = AvatarWidget(self.a2)
         self.card1_ava_card2 = MCardWidget()
         self.layout_home_card1_ava_card2 = MQGridLayout(self.card1_ava_card2)
         self.layout_home_card1_ava_card2.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card2.addWidget(self.ava2)
 
-        self.ava3 = AvatarWidget(
-            get_photo_from_internet("https://i0.hdslb.com/bfs/article/a59d70a80efe44a6c5ca17e8e4d34375188801893.jpg"))
+        self.ava3 = AvatarWidget(self.a3)
         self.card1_ava_card3 = MCardWidget()
         self.layout_home_card1_ava_card3 = MQGridLayout(self.card1_ava_card3)
         self.layout_home_card1_ava_card3.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card3.addWidget(self.ava3)
 
-        self.ava4 = AvatarWidget(
-            get_photo_from_internet("https://i0.hdslb.com/bfs/article/3474819e8223a34e7b525be138a74cc8188801893.jpg"))
+        self.ava4 = AvatarWidget(self.a4)
         self.card1_ava_card4 = MCardWidget()
         self.layout_home_card1_ava_card4 = MQGridLayout(self.card1_ava_card4)
         self.layout_home_card1_ava_card4.setAlignment(Qt.AlignCenter)
@@ -213,17 +253,19 @@ class Window(MSFluentWindow):
         self.layout_home_card2 = MQGridLayout(self.home_card2)
         self.home_card2.clicked.connect(lambda: self.show_info_bar(self.width(), self.height()))
 
-        # 获取临沂天气
-        self.all_weather = get_weather_data()
-        if self.all_weather == "获取失败":
+        # 获取天气
+        if self.all_weather == [["获取失败"]]:
             self.weather_state = False
         else:
             self.weather_state = True
         self.weather_data = {}
-        stands = []
-        for i in range(len(self.all_weather)):
-            self.weather_data[self.all_weather[i][0]] = (self.all_weather[i][1:])
-            stands.append(self.all_weather[i][0])
+
+        f = open(self.city_code, 'rb')
+
+        # 加载JSON文件内容到Python对象
+        # 使用json模块的load方法加载json数据，返回一个字典
+        cities = json.load(f)
+        stands = cities.keys()
         self.home_weather_card_combobox = MSearchLineEdit()
         completer = QCompleter(stands, self.home_weather_card_combobox)
         completer.setCaseSensitivity(Qt.CaseInsensitive)
@@ -254,9 +296,9 @@ class Window(MSFluentWindow):
         # 创建第三个大卡片存放图片卡片
         self.home_card3 = MSimpleCardWidget()
         self.layout_card3 = MQGridLayout(self.home_card3)
-        qpix = get_photo_from_internet("https://t.alcy.cc/fj/")
+
         image_label = MImageLabel()
-        image_label.setImage(qpix is None and self.resource_home_p or qpix.scaled(1920, 1080))
+        image_label.setImage(self.home_b_photo is None and self.resource_home_p or self.home_b_photo.scaled(1920, 1080))
         image_label.scaledToHeight(330)
 
         # 添加图片卡片到第三个大卡片
@@ -303,7 +345,9 @@ class Window(MSFluentWindow):
         self.timer_start_button = SwitchButton()
         self.timer_start_button.setOnText("关闭倒计时")
         self.timer_start_button.setOffText("开始倒计时")
-        self.timer_label1 = StrongBodyLabel("倒计时时间选择↓")
+        self.timer_start_button.setFixedSize(128, 30)
+        self.timer_label1 = StrongBodyLabel("倒计时时间选择->")
+        self.timer_label1.setFixedSize(120, 30)
         self.timer_start_button.checkedChanged.connect(self.timer_button_action)
 
         self.layout_app_card1.addWidget(self.timer_label1)
@@ -318,6 +362,7 @@ class Window(MSFluentWindow):
         self.countdown_start_button = SwitchButton()
         self.countdown_start_button.setOffText("开始计时")
         self.countdown_start_button.setOnText("停止计时")
+        self.countdown_start_button.setFixedSize(114, 30)
 
         self.countdown_pause_button = MPushButton("暂停计时", ficon.PAUSE_BOLD)
 
@@ -326,20 +371,13 @@ class Window(MSFluentWindow):
 
         self.progress_circle_countdown.setRange(0, 10)
 
-        # # 显示进度环内文本
-        # self.progress_circle_countdown.setTextVisible(True)
-        #
-        # # 调整进度环大小
-        # self.progress_circle_countdown.setFixedSize(80, 80)
-        #
-        # # 调整厚度
-        # self.progress_circle_countdown.setStrokeWidth(14)
         self.progress_circle_countdown.setFormat("v")
         self.countdown_start_button.checkedChanged.connect(self.countdown_button_action)
         self.countdown_pause_button.clicked.connect(self.countdown_button_pause)
         self.countdown_label = SubtitleLabel("⌛未开始计时")
-        self.layout_app_card2.addWidget(self.countdown_start_button)
         self.layout_app_card2.addWidget(self.countdown_label)
+        self.layout_app_card2.addWidget(self.countdown_start_button)
+
         self.layout_app_card2.addWidget(self.countdown_pause_button)
         self.layout_app_card2.addWidget(self.progress_circle_countdown)
 
@@ -527,9 +565,8 @@ class Window(MSFluentWindow):
         view = FlyoutView(
             title='BaiShang',
             content="MAVERICK",
-            image=self.resource_ava,
+            image=self.resource_gif1,
             isClosable=True
-            # image='resource/yiku.gif',
         )
 
         # add button to view
@@ -612,7 +649,7 @@ class Window(MSFluentWindow):
         self.countdown_count += 1
         s = int(self.countdown_count / 10)
         self.progress_circle_countdown.setValue(self.countdown_count % 10 + 1)
-        res = Utils.tenms_to_time(s)
+        res = Utils.second_to_time(s)
         self.countdown_label.setText(f"  {res[0]}小时-{res[1]}分-{res[2]}秒")
 
     def file_dir_get(self):
@@ -726,18 +763,15 @@ class Window(MSFluentWindow):
         res = self.home_weather_card_combobox.text()
         # self.show_info_bar(f"{inspect.stack()[0][3]} -> {res}")
         self.weather_position = res
-
         if len(self.weather_position) == 0:
             return
         if '\u4e00' <= self.weather_position[0] <= '\u9fff':
             try:
-                self.card2_weather_card_label1.setDes(self.weather_position)
-                self.card2_weather_card_label2.setDes(self.weather_data[res][0])
-                self.card2_weather_card_label3.setTitle(
-                    self.weather_data[res][1] == '-' and "🕰️当前时段" or "🌡️最高气温")
-                self.card2_weather_card_label3.setDes(
-                    self.weather_data[res][1] == '-' and "⭐夜间" or self.weather_data[res][1])
-                self.card2_weather_card_label4.setDes(self.weather_data[res][2])
+                data = re_get_weather(self.weather_position, self.city_code)
+                self.card2_weather_card_label1.setDes(data[0])
+                self.card2_weather_card_label2.setDes(data[1])
+                self.card2_weather_card_label3.setDes(data[2])
+                self.card2_weather_card_label4.setDes(data[3])
             except Exception as e:
                 self.card2_weather_card_label1.setDes("未选择")
                 self.card2_weather_card_label2.setDes("未找到")
@@ -749,7 +783,7 @@ class Window(MSFluentWindow):
             return
         if '\u4e00' <= self.weather_position[0] <= '\u9fff':
             try:
-                data = re_get_weather(self.weather_position[:-1], self.city_code)
+                data = re_get_weather(self.weather_position, self.city_code)
                 self.card2_weather_card_label1.setDes(data[0])
                 self.card2_weather_card_label2.setDes(data[1])
                 self.card2_weather_card_label3.setDes(data[2])
@@ -776,6 +810,7 @@ if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     app = QApplication(sys.argv)
+    QtWidgets.qApp.processEvents()  # 处理主进程事件
     w = Window()
     w.show()
     app.exec_()

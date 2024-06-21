@@ -1,13 +1,15 @@
 from pathlib import Path
 
-from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve
+from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve, QPoint
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QVBoxLayout, QGridLayout
-from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit
+from PyQt5.QtWidgets import QVBoxLayout, QGridLayout, QApplication
+from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit, \
+    SplashScreen, IndeterminateProgressRing
 from qfluentwidgets import FlowLayout
 from qfluentwidgets import LineEdit, ExpandLayout, ElevatedCardWidget, ImageLabel, CaptionLabel, HeaderCardWidget, \
     BodyLabel
 from qfluentwidgets import FluentIcon as ficon
+
 
 class MLineEdit(LineEdit):
     def __init__(self, parent=None):
@@ -60,7 +62,7 @@ class MSimpleCardWidget(SimpleCardWidget):
 class MFLayout(FlowLayout):
     def __init__(self, to):
         super().__init__(to, needAni=True)
-        super().setAnimation(650, QEasingCurve.InOutCubic)
+        super().setAnimation(550, QEasingCurve.InOutCubic)
         super().setContentsMargins(20, 20, 20, 20)
         super().setAlignment(Qt.AlignCenter)
 
