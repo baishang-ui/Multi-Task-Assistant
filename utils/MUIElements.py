@@ -1,7 +1,8 @@
 from pathlib import Path
 
-from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve, QPoint
+from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve, QPoint, QRect
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPainter, QPen
 from PyQt5.QtWidgets import QVBoxLayout, QGridLayout, QApplication
 from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit, \
     SplashScreen, IndeterminateProgressRing
@@ -131,7 +132,45 @@ class MImageLabel(ImageLabel):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         super().setBorderRadius(14, 14, 14, 14)
+        self.qr = None
+        self.start_point = None
+        self.end_point = None
+        self.start = False
+        self.drawing = False
+        self.setCursor(Qt.CrossCursor)
+        self.setMouseTracking(True)
 
+    def paintEvent(self, event):
+        super(MImageLabel, self).paintEvent(event)
+        if self.drawing:
+            painter = QPainter()
+            painter.begin(self)
+            pen = QPen(Qt.white, 1)
+            painter.setPen(pen)
+            self.qr = QRect(self.start_point, self.end_point)
+            painter.drawRect(self.qr)
+            painter.end()
+
+    def mousePressEvent(self, event):
+
+        if not self.start:
+            self.start_point = event.pos()
+            self.start = True
+
+    def mouseReleaseEvent(self, event):
+        print(self.get_qrect())
+        if self.drawing:
+            self.drawing = False
+            self.start = False
+
+    def mouseMoveEvent(self, event):
+        if self.start:
+            self.end_point = event.pos()
+            self.drawing = True
+            self.update()
+
+    def get_qrect(self):
+        return [self.qr.x(), self.qr.y(), self.qr.x() + self.qr.width(), self.qr.y() + self.qr.height()]
 
 class MPushButton(PushButton):
 

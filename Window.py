@@ -59,6 +59,8 @@ class Window(MSFluentWindow):
         self.extend_slider_label = BodyLabel()
         setTheme(Theme.AUTO)
         setThemeColor("#b9beed")
+        self.pic_h = 300
+        self.pic_w = 0
         self.all_weather = None
         self.weather_state = False
         self.layout_app_card2 = MQGridLayout(None)
@@ -497,6 +499,10 @@ class Window(MSFluentWindow):
         self.extend_card2_tip = SubtitleLabel("图片预览")
         self.extend_card2_layout.addWidget(self.extend_card2_tip)
         self.pixmap = MImageLabel()
+        self.cut_b = MPushButton("裁剪")
+        self.cut_b.clicked.connect(self.cut_pic)
+
+        self.extend_card2_layout.addWidget(self.cut_b)
         self.extend_drag_edit.textChanged.connect(self.file_dir_get)
         self.extend_start_button.clicked.connect(self.handle_pixmap)
         self._extend_layout.setColumnStretch(0, 2)
@@ -515,6 +521,35 @@ class Window(MSFluentWindow):
 
         if w.exec():
             QDesktopServices.openUrl(QUrl("https://space.bilibili.com/188801893?spm_id_from=333.1007.0.0"))
+
+    def cut_pic(self):
+        if self.file_dir == "":
+            self.show_info_bar("路径为空", "error", "错误")
+        else:
+            try:
+                to = self.file_dir.split("/")
+                pit_name = to[-1]
+                im = Image.open(self.file_dir)
+                print(self.pix.height()/self.pic_h)
+                new_size = (self.pixmap.get_qrect()[0] * (self.pix.width()/self.pic_w), self.pixmap.get_qrect()[1] * (self.pix.width()/self.pic_w), self.pixmap.get_qrect()[2] * (self.pix.height()/self.pic_h), self.pixmap.get_qrect()[3] * (self.pix.height()/self.pic_h))
+                print(self.pixmap.get_qrect(), new_size)
+
+                handled = im.crop(new_size)
+                fix_name = f"crop()+{pit_name}"
+                new_file = self.current_dir + "/" + fix_name
+                handled.save(new_file)
+                self.extend_card2_layout.removeWidget(self.pixmap)
+                self.pix = QPixmap(new_file)
+                pixh = self.pix.height()
+                pixw = self.pix.width()
+                l = pixh / self.pic_h
+                self.pic_w = pixw // l
+                self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
+                self.extend_card2_layout.addWidget(self.pixmap)
+                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
+
+            except Exception as e:
+                self.show_info_bar(str(e))
 
     def show_info_bar(self, content="消息", typ="new", title="", duration=1500):
         match typ:
@@ -663,16 +698,16 @@ class Window(MSFluentWindow):
                 self.pix = QPixmap(self.file_dir)
                 pixh = self.pix.height()
                 pixw = self.pix.width()
-                l = pixh / 300
-                r = pixw // l
-                self.pixmap.setPixmap(self.pix.scaled(int(r), 300))
+                l = pixh / self.pic_h
+                self.pic_w = pixw // l
+                self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
                 self.extend_card2_layout.addWidget(self.pixmap)
-                self.extend_card2.setFixedSize(int(r) + 40, 380)
+                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
             except Exception as e:
                 self.show_info_bar(str(e))
 
     def handle_pixmap(self):
-        Utils.creat_file_dir()
+        Utils.create_file_dir()
         if self.file_dir == "":
             self.show_info_bar("路径为空", "error", "错误")
         else:
@@ -739,11 +774,11 @@ class Window(MSFluentWindow):
                 self.pix = QPixmap(new_file)
                 pixh = self.pix.height()
                 pixw = self.pix.width()
-                l = pixh / 300
-                r = pixw // l
-                self.pixmap.setPixmap(self.pix.scaled(int(r), 300))
+                l = pixh / self.pic_h
+                self.pic_w = pixw // l
+                self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
                 self.extend_card2_layout.addWidget(self.pixmap)
-                self.extend_card2.setFixedSize(int(r) + 40, 380)
+                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
 
             except Exception as e:
                 self.show_info_bar(str(e))
