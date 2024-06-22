@@ -522,35 +522,6 @@ class Window(MSFluentWindow):
         if w.exec():
             QDesktopServices.openUrl(QUrl("https://space.bilibili.com/188801893?spm_id_from=333.1007.0.0"))
 
-    def cut_pic(self):
-        if self.file_dir == "":
-            self.show_info_bar("路径为空", "error", "错误")
-        else:
-            try:
-                to = self.file_dir.split("/")
-                pit_name = to[-1]
-                im = Image.open(self.file_dir)
-                print(self.pix.height()/self.pic_h)
-                new_size = (self.pixmap.get_qrect()[0] * (self.pix.width()/self.pic_w), self.pixmap.get_qrect()[1] * (self.pix.width()/self.pic_w), self.pixmap.get_qrect()[2] * (self.pix.height()/self.pic_h), self.pixmap.get_qrect()[3] * (self.pix.height()/self.pic_h))
-                print(self.pixmap.get_qrect(), new_size)
-
-                handled = im.crop(new_size)
-                fix_name = f"crop()+{pit_name}"
-                new_file = self.current_dir + "/" + fix_name
-                handled.save(new_file)
-                self.extend_card2_layout.removeWidget(self.pixmap)
-                self.pix = QPixmap(new_file)
-                pixh = self.pix.height()
-                pixw = self.pix.width()
-                l = pixh / self.pic_h
-                self.pic_w = pixw // l
-                self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
-                self.extend_card2_layout.addWidget(self.pixmap)
-                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
-
-            except Exception as e:
-                self.show_info_bar(str(e))
-
     def show_info_bar(self, content="消息", typ="new", title="", duration=1500):
         match typ:
             case "success":
@@ -627,11 +598,13 @@ class Window(MSFluentWindow):
             if res:
                 self.timer_start_button.setOnText("关闭倒计时")
                 self.system_timer.start(1000)
+                self.show_info_bar("开始", "success", "倒计时")
             else:
                 self.timer_start_button.setOffText("开始倒计时")
                 self.time_count = 0
                 self.progress_circle_timer.setValue(0)
                 self.system_timer.stop()
+                self.show_info_bar("关闭", "success", "倒计时")
         except Exception as e:
             self.show_info_bar(str(e))
 
@@ -652,11 +625,13 @@ class Window(MSFluentWindow):
         try:
             if res:
                 self.system_count_down.start(100)
+                self.show_info_bar("开始", "success", "计时")
                 # self.progress_circle_countdown.start()
             else:
                 self.countdown_pause_button.setText("暂停计时")
                 self.countdown_pause_button.setIcon(ficon.PAUSE_BOLD)
                 self.system_count_down.stop()
+                self.show_info_bar("关闭", "success", "计时")
                 self.countdown_label.setText("⌛未开始计时")
                 # self.progress_circle_countdown.stop()
                 self.countdown_count = 0
@@ -672,10 +647,12 @@ class Window(MSFluentWindow):
                     self.countdown_pause_button.setText("暂停计时")
                     self.countdown_pause_button.setIcon(ficon.PAUSE_BOLD)
                     self.system_count_down.start(100)
+                    self.show_info_bar("恢复", "success", "计时")
                 else:
                     self.countdown_pause_button.setText("恢复计时")
                     self.countdown_pause_button.setIcon(ficon.PLAY_SOLID)
                     self.system_count_down.stop()
+                    self.show_info_bar("暂停", "success", "计时")
                 self.countdown_pause_flag = not self.countdown_pause_flag
         except Exception as e:
             self.show_info_bar(str(e))
@@ -703,6 +680,36 @@ class Window(MSFluentWindow):
                 self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
                 self.extend_card2_layout.addWidget(self.pixmap)
                 self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
+            except Exception as e:
+                self.show_info_bar(str(e))
+
+    def cut_pic(self):
+        if self.file_dir == "":
+            self.show_info_bar("路径为空", "error", "错误")
+        else:
+            try:
+                to = self.file_dir.split("/")
+                pit_name = to[-1]
+                im = Image.open(self.file_dir)
+                print(self.pix.height()/self.pic_h)
+                new_size = (self.pixmap.get_qrect()[0] * (self.pix.width()/self.pic_w), self.pixmap.get_qrect()[1] * (self.pix.width()/self.pic_w), self.pixmap.get_qrect()[2] * (self.pix.height()/self.pic_h), self.pixmap.get_qrect()[3] * (self.pix.height()/self.pic_h))
+                print(self.pixmap.get_qrect(), new_size)
+
+                handled = im.crop(new_size)
+                fix_name = f"crop()+{pit_name}"
+                new_file = self.current_dir + "/" + fix_name
+                handled.save(new_file)
+                self.extend_card2_layout.removeWidget(self.pixmap)
+                self.pix = QPixmap(new_file)
+                pixh = self.pix.height()
+                pixw = self.pix.width()
+                l = pixh / self.pic_h
+                self.pic_w = pixw // l
+                self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
+                self.extend_card2_layout.addWidget(self.pixmap)
+                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
+                self.extend_drag_edit.setText(new_file)
+                self.file_dir_get()
             except Exception as e:
                 self.show_info_bar(str(e))
 
@@ -779,7 +786,8 @@ class Window(MSFluentWindow):
                 self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
                 self.extend_card2_layout.addWidget(self.pixmap)
                 self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
-
+                self.extend_drag_edit.setText(new_file)
+                self.file_dir_get()
             except Exception as e:
                 self.show_info_bar(str(e))
 
@@ -823,11 +831,13 @@ class Window(MSFluentWindow):
                 self.card2_weather_card_label2.setDes(data[1])
                 self.card2_weather_card_label3.setDes(data[2])
                 self.card2_weather_card_label4.setDes(data[3])
+                self.show_info_bar("获取成功", "success", self.weather_position)
             except Exception as e:
                 self.card2_weather_card_label1.setDes("未选择")
                 self.card2_weather_card_label2.setDes("未找到")
                 self.card2_weather_card_label3.setDes("未找到")
                 self.card2_weather_card_label4.setDes("未找到")
+                self.show_info_bar("获取失败", "error", self.weather_position)
 
     def extend_get_slider(self):
         res = self.extend_slider.value() / 100
