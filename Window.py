@@ -4,12 +4,12 @@ import sys
 
 from PIL import Image, ImageFilter
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QUrl, QTime, QTimer, QSize
+from PyQt5.QtCore import QUrl, QTime, QTimer, QSize, QPoint
 from PyQt5.QtGui import QIcon, QDesktopServices, QFont
-from PyQt5.QtWidgets import QCompleter, QWidget
+from PyQt5.QtWidgets import QCompleter, QWidget, QApplication
 from qfluentwidgets import FlyoutView, Flyout, FlyoutAnimationType, \
     TimePicker, ProgressRing, Slider, SwitchButton, ProgressBar, StrongBodyLabel, \
-    SubtitleLabel
+    SubtitleLabel, SplashScreen
 from qfluentwidgets import (NavigationItemPosition, MessageBox,
                             MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
                             Theme, setTheme, setThemeColor)
@@ -89,6 +89,7 @@ class Window(MSFluentWindow):
         self.resource_logo = Utils.get_path("resource/logo.png")
         self.resource_home_p = Utils.get_path("resource/home.png")
         self.resource_gif1 = Utils.get_path("resource/1.gif")
+        self.resource_gif2 = Utils.get_path("resource/2.gif")
         self.a1 = QPixmap(self.resource_ava)
         self.a2 = QPixmap(self.resource_ava)
         self.a3 = QPixmap(self.resource_ava)
@@ -201,8 +202,12 @@ class Window(MSFluentWindow):
         self.home_b_photo = get_photo_from_internet("https://t.alcy.cc/fj/")
 
     def initHomeInterface(self):
-        layout = MQGridLayout(self.homeInterface)
+        self.home_layout = MQGridLayout(self.homeInterface)
         # 创建第一个大卡片存放信息卡片
+        self.home_layout.setColumnStretch(0, 3)
+        self.home_layout.setColumnStretch(1, 1)
+        self.home_layout.setRowStretch(0, 2)
+        self.home_layout.setRowStretch(1, 1)
         self.home_card1 = MSimpleCardWidget()
         self.layout_home_card1 = MQGridLayout(self.home_card1)
         # self.layout_home_card1.setAlignment(Qt.AlignCenter)
@@ -231,8 +236,14 @@ class Window(MSFluentWindow):
         self.layout_home_card1_ava_card4.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card4.addWidget(self.ava4)
 
-        self.card1_ava_card1.clicked.connect(self.show_flyout_view)
-
+        self.card1_ava_card1.clicked.connect(
+            lambda: self.show_flyout_view(self.card1_ava_card1, "毕天宇", "202209160316", self.resource_gif2))
+        self.card1_ava_card2.clicked.connect(
+            lambda: self.show_flyout_view(self.card1_ava_card2, "赵锐", "202209160307", self.resource_gif1))
+        self.card1_ava_card3.clicked.connect(
+            lambda: self.show_flyout_view(self.card1_ava_card3, "陈影茜", "202209160305", self.resource_gif1))
+        self.card1_ava_card4.clicked.connect(
+            lambda: self.show_flyout_view(self.card1_ava_card4, "魏艳", "202209160301", self.resource_gif1))
         self.card1_info_card1 = MDescriptionCard("成员", "202209160316-毕天宇")
         self.card1_info_card2 = MDescriptionCard("成员", "202209160307-赵锐")
         self.card1_info_card3 = MDescriptionCard("成员", "202209160305-陈影茜")
@@ -264,9 +275,6 @@ class Window(MSFluentWindow):
         self.weather_data = {}
 
         f = open(self.city_code, 'rb')
-
-        # 加载JSON文件内容到Python对象
-        # 使用json模块的load方法加载json数据，返回一个字典
         cities = json.load(f)
         stands = cities.keys()
         self.home_weather_card_combobox = MSearchLineEdit()
@@ -303,18 +311,17 @@ class Window(MSFluentWindow):
         image_label = MImageLabel(candraw=False)
         image_label.setImage(self.home_b_photo is None and self.resource_home_p or self.home_b_photo.scaled(1920, 1080))
         image_label.scaledToHeight(330)
-
         # 添加图片卡片到第三个大卡片
         self.layout_card3.addWidget(image_label)
 
         # 添加三个到主页面
-        layout.addWidget(self.home_card3, 0, 0, 1, 2)
-        layout.addWidget(self.home_card2, 0, 2, 1, 2)
-        layout.addWidget(self.home_card1, 1, 0, 1, 4)
+        self.home_layout.addWidget(self.home_card3, 0, 0, 1, 1)
+        self.home_layout.addWidget(self.home_card2, 0, 1, 1, 1)
+        self.home_layout.addWidget(self.home_card1, 1, 0, 1, 2)
 
     def initAppInterface(self):
-        layout = MQGridLayout(self.appInterface)
-        layout.setAlignment(Qt.AlignTop)
+        self.app_layout = MQGridLayout(self.appInterface)
+        self.app_layout.setAlignment(Qt.AlignTop)
         self.system_countdown = QTimer(self.appInterface, timeout=self.run_countdown)
         self.app_card1 = MSimpleCardWidget()
         self.layout_app_card1 = MFLayout(self.app_card1)
@@ -384,8 +391,8 @@ class Window(MSFluentWindow):
         self.layout_app_card2.addWidget(self.timer_pause_button)
         self.layout_app_card2.addWidget(self.progress_circle_timer)
 
-        layout.addWidget(self.app_card1, 0, 0)
-        layout.addWidget(self.app_card2, 0, 1)
+        self.app_layout.addWidget(self.app_card1, 0, 0)
+        self.app_layout.addWidget(self.app_card2, 0, 1)
 
     def initExtendInterface(self):
         self._extend_layout = MQGridLayout(self.extendInterface)
@@ -408,6 +415,7 @@ class Window(MSFluentWindow):
         self.extend_combobox.currentIndexChanged.connect(self.pixmap_get_type)
         self.extend_card1_layout.addWidget(self.extend_combobox)
         self.extend_slider = Slider(Qt.Horizontal)
+
         self.extend_slider_label = BodyLabel()
         self.extend_slider.setFixedWidth(180)
         self.extend_slider.setRange(0, 100)
@@ -416,6 +424,7 @@ class Window(MSFluentWindow):
         self.extend_card1_layout.addWidget(self.extend_slider_label)
         self.extend_card1_layout.addWidget(self.extend_start_button)
         self.extend_card2 = MSimpleCardWidget()
+
         self.extend_card2_layout = MFLayout(self.extend_card2)
         self.extend_card2_tip = SubtitleLabel("图片预览")
         self.extend_card2_layout.addWidget(self.extend_card2_tip)
@@ -432,6 +441,7 @@ class Window(MSFluentWindow):
         self._extend_layout.addWidget(self.extend_card2, 0, 1, 1, 1)
 
     def show_message_box(self):
+        print(self.width(), self.height())
         w = MessageBox(
             '信息',
             'By BaiShang',
@@ -488,7 +498,7 @@ class Window(MSFluentWindow):
                 )
                 w.setCustomBackgroundColor('white', '#202020')
 
-    def show_flyout_view(self):
+    def show_flyout_view(self, to, title="", content="", img=""):
         """
         显示弹出视图。
 
@@ -497,9 +507,9 @@ class Window(MSFluentWindow):
         """
         # 创建弹出视图，配置标题、内容、图像和是否可关闭
         view = FlyoutView(
-            title='BaiShang',
-            content="MAVERICK",
-            image=self.resource_gif1,
+            title=title,
+            content=content,
+            image=img,
             isClosable=True
         )
 
@@ -508,7 +518,7 @@ class Window(MSFluentWindow):
         view.widgetLayout.addSpacing(11)
 
         # 使用飞出动画方式显示视图，并在视图关闭时关联关闭操作
-        w = Flyout.make(view, self.card1_ava_card1, self, aniType=FlyoutAnimationType.SLIDE_RIGHT)
+        w = Flyout.make(view, to, self, aniType=FlyoutAnimationType.SLIDE_RIGHT)
         view.closed.connect(w.close)
 
     def get_calc_time(self, time: str):
@@ -695,8 +705,6 @@ class Window(MSFluentWindow):
                 self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
                 # 将处理后的图片添加到布局中
                 self.extend_card2_layout.addWidget(self.pixmap)
-                # 设置布局的固定大小
-                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 480)
             except Exception as e:
                 # 如果在处理图片过程中发生异常，显示异常信息
                 self.show_info_bar(str(e))
@@ -742,8 +750,7 @@ class Window(MSFluentWindow):
                 self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
                 self.extend_card2_layout.addWidget(self.pixmap)
 
-                # 更新图片显示尺寸和文件路径显示
-                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 480)
+                # 更新文件路径显示
                 self.extend_drag_edit.setText(new_file)
                 # 更新文件目录
                 self.file_dir_get()

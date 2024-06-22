@@ -1,10 +1,8 @@
 import requests
-from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QPixmap
 import logging
 import urllib.parse
 
-# 假设存在一个配置或常量定义超时时间和最大图片大小
 DEFAULT_TIMEOUT = 3
 
 

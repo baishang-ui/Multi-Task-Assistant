@@ -1,15 +1,14 @@
 from pathlib import Path
 
-from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve, QPoint, QRect
+from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve, QRect
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPen
-from PyQt5.QtWidgets import QVBoxLayout, QGridLayout, QApplication
-from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit, \
-    SplashScreen, IndeterminateProgressRing
+from PyQt5.QtWidgets import QVBoxLayout, QGridLayout
+from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit
 from qfluentwidgets import FlowLayout
+from qfluentwidgets import FluentIcon as ficon
 from qfluentwidgets import LineEdit, ExpandLayout, ElevatedCardWidget, ImageLabel, CaptionLabel, HeaderCardWidget, \
     BodyLabel
-from qfluentwidgets import FluentIcon as ficon
 
 
 class MLineEdit(LineEdit):
@@ -149,7 +148,7 @@ class MImageLabel(ImageLabel):
             painter.setRenderHint(QPainter.Antialiasing)
             painter.setRenderHint(QPainter.HighQualityAntialiasing)
             painter.begin(self)
-            pen = QPen(Qt.white, 4)
+            pen = QPen(Qt.white, 2)
             pen.setStyle(Qt.SolidLine)
             pen.setJoinStyle(Qt.RoundJoin)
             painter.setPen(pen)
