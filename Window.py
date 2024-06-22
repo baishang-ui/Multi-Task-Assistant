@@ -1,11 +1,12 @@
 # coding:utf-8
 import os
 import sys
+
 from PIL import Image, ImageFilter
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QUrl, QPoint, QTime, QTimer, QSize
+from PyQt5.QtCore import QUrl, QTime, QTimer, QSize
 from PyQt5.QtGui import QIcon, QDesktopServices, QFont
-from PyQt5.QtWidgets import QApplication, QCompleter, QWidget
+from PyQt5.QtWidgets import QCompleter, QWidget
 from qfluentwidgets import FlyoutView, Flyout, FlyoutAnimationType, \
     TimePicker, ProgressRing, Slider, SwitchButton, ProgressBar, StrongBodyLabel, \
     SubtitleLabel
