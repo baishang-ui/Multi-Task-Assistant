@@ -534,61 +534,67 @@ class Window(MSFluentWindow):
 
     def countdown_button_action(self):
         """
-        处理计时器按钮的点击事件。
+        处理倒计时启动按钮的点击事件。
 
-        根据按钮的选中状态，启动或停止计时器，并相应地更新用户界面。
+        根据按钮的当前状态（选中或未选中），启动或停止倒计时，并相应地更新用户界面元素。
         """
-        # 获取计时器启动按钮的选中状态
+        # 检查倒计时启动按钮的选中状态
         res = self.countdown_start_button.checked
         try:
             if res:
-                # 当按钮被选中时，启动计时器，并更新按钮文本
+                # 当按钮被选中时，启动倒计时，并更新按钮文本
                 self.countdown_start_button.setOnText("关闭倒计时")
-                self.system_countdown.start(1000)
-                self.show_info_bar("开始", "success", "倒计时")
+                self.system_countdown.start(1000)  # 以1秒为间隔启动倒计时
+                self.show_info_bar("开始", "success", "倒计时")  # 显示开始倒计时的信息
             else:
-                # 当按钮未被选中时，停止计时器，并重置相关界面元素
+                # 当按钮未被选中时，停止倒计时，并重置相关界面元素
                 self.countdown_start_button.setOffText("开始倒计时")
-                self.time_count = 0
-                self.progress_circle_countdown.setValue(0)
-                self.system_countdown.stop()
-                self.show_info_bar("关闭", "success", "倒计时")
+                self.time_count = 0  # 重置时间计数器
+                self.progress_circle_countdown.setValue(0)  # 重置进度圈的值
+                self.system_countdown.stop()  # 停止倒计时
+                self.show_info_bar("关闭", "success", "倒计时")  # 显示关闭倒计时的信息
         except Exception as e:
-            # 异常情况下，通过信息栏显示错误信息
+            # 在发生异常时，通过信息栏显示异常信息
             self.show_info_bar(str(e))
 
     def run_countdown(self):
         """
-        运行计时器，根据设定的计算时间更新进度，并在完成时触发相应操作。
+        执行倒计时逻辑。
 
-        此方法主要负责更新计时器的进度，并在计时完成时给出相应的反馈。它通过增加时间计数，
-        根据当前计数和总计算时间计算进度百分比，并更新进度圈的值。如果进度达到100%，
-        则表示计时完成，此时会关闭计时器开关并显示完成消息。
+        每次调用此方法时，都会增加时间计数器，并根据计算出的百分比更新倒计时进度。
+        如果倒计时完成，将关闭倒计时启动按钮并显示成功消息。
+        如果在计算过程中发生异常，将显示异常信息。
         """
-        # 增加时间计数，用于计算进度
+
+        # 增加时间计数器
         self.time_count += 1
+
         try:
-            # 计算当前进度的百分比
+            # 计算当前倒计时的百分比
             percent = int((self.time_count / self.calc_time) * 100)
+
+            # 如果倒计时已完成
             if percent > 100:
-                # 如果进度超过100%，计时器完成，关闭计时器开关，并显示完成消息
+                # 关闭倒计时启动按钮，并显示倒计时完成的消息
                 self.countdown_start_button.setChecked(False)
                 self.show_info_bar("倒计时完成", "success", "计时器")
             else:
-                # 更新进度圈的值以反映当前进度
+                # 更新倒计时进度圈的值
                 self.progress_circle_countdown.setValue(percent)
         except Exception as e:
-            # 如果在计算过程中发生异常，显示异常信息
+            # 如果发生异常，显示异常信息
             self.show_info_bar(str(e))
 
     def timer_button_action(self):
         """
-        倒计时按钮动作处理函数。
+        处理计时器按钮的动作。
 
-        根据倒计时启动按钮的选中状态，决定是开始倒计时还是暂停/停止计时。
+        根据计时器启动按钮的选中状态，开始或停止计时器。如果计时器已经开始，则暂停计时器；
+        如果计时器未开始，则启动计时器。
         """
-        # 检查倒计时启动按钮是否被选中
+        # 检查计时器启动按钮的选中状态
         res = self.timer_start_button.checked
+
         try:
             if res:
                 # 如果按钮被选中，开始计时
@@ -612,30 +618,29 @@ class Window(MSFluentWindow):
 
     def timer_button_pause(self):
         """
-        控制计时按钮的暂停和恢复功能。
+        控制计时器的暂停和恢复功能。
 
-        当倒计时已经开始且倒计时暂停标志为True时，按钮变为恢复计时状态；
-        当倒计时已经开始且倒计时暂停标志为False时，按钮变为暂停计时状态。
-
-        这个方法通过改变按钮的文本和图标以及系统计时的状态来实现暂停和恢复功能。
+        当计时器开始运行后，此函数用于切换计时器的暂停状态。
+        如果计时器处于暂停状态，它将恢复计时；
+        如果计时器处于运行状态，它将暂停计时。
         """
         try:
-            # 检查计时启动按钮是否被选中
+            # 检查计时器启动按钮是否被选中
             if self.timer_start_button.checked:
-                # 判断计时是否处于暂停状态
+                # 切换计时器的暂停状态
                 if self.timer_pause_flag:
-                    # 如果处于暂停状态，更新按钮为恢复计时，并启动计时
+                    # 如果当前处于暂停状态，更新按钮为恢复计时，并启动计时器
                     self.timer_pause_button.setText("暂停计时")
                     self.timer_pause_button.setIcon(ficon.PAUSE_BOLD)
                     self.system_count_down.start(100)
                     self.show_info_bar("恢复", "success", "计时")
                 else:
-                    # 如果不处于暂停状态，更新按钮为暂停计时，并停止计时
+                    # 如果当前不处于暂停状态，更新按钮为暂停计时，并停止计时器
                     self.timer_pause_button.setText("恢复计时")
                     self.timer_pause_button.setIcon(ficon.PLAY_SOLID)
                     self.system_count_down.stop()
                     self.show_info_bar("暂停", "success", "计时")
-                # 切换计时暂停标志的状态
+                # 切换计时器的暂停标志
                 self.timer_pause_flag = not self.timer_pause_flag
         except Exception as e:
             # 如果发生异常，通过信息栏显示异常信息
@@ -643,20 +648,19 @@ class Window(MSFluentWindow):
 
     def run_timer(self):
         """
-        启动倒计时逻辑。
+        运行定时器函数，每秒执行一次来更新计时器的显示。
 
-        每次调用此方法时，倒计时计数器都会增加，并根据当前的倒计时进度更新进度圈和倒计时标签的显示。
-        倒计时以小时、分钟和秒的格式显示。
+        此函数主要负责更新计时器的进度圈和文字标签，显示倒计时的剩余时间。
         """
-        # 增加倒计时计数器
+        # 自增计时器计数，用于计算已经过去的时间
         self.timer_count += 1
-        # 计算已经过去的时间，单位为秒
+        # 计算已经过去的时间（秒），用于后续转换为小时、分钟和秒的格式
         s = int(self.timer_count / 10)
-        # 更新进度圈的值，显示当前倒计时的百分比
+        # 更新进度圈的值，显示当前计时器的进度
         self.progress_circle_timer.setValue(self.timer_count % 10 + 1)
-        # 将秒数转换为小时、分钟和秒的格式
+        # 将秒数转换为小时、分钟和秒的格式，用于更新计时器的文字标签
         res = Utils.second_to_time(s)
-        # 更新倒计时标签的文本，显示转换后的時間格式
+        # 更新计时器标签的文本，显示倒计时的剩余时间
         self.timer_label.setText(f"  {res[0]}小时-{res[1]}分-{res[2]}秒")
 
     def file_dir_get(self):
@@ -1086,7 +1090,6 @@ class Window(MSFluentWindow):
         # 由于这个方法现在假设它只在滑块值改变时被调用，
         # 因此不需要每次调用时都重新计算百分比。
         self.update_slider_label()
-
 
 
 if __name__ == '__main__':
