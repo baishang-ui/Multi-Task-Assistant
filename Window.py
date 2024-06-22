@@ -48,11 +48,11 @@ class Window(MSFluentWindow):
         self.splash = None
         self.desktop = QApplication.desktop().availableGeometry()
         self.pc_w, self.pc_h = self.desktop.width(), self.desktop.height()
-        self.progress_circle_countdown = None
-        self.countdown_pause_button = None
-        self.countdown_label = SubtitleLabel()
-        self.countdown_start_button = MPushButton()
-        self.countdown_pause_flag = False
+        self.progress_circle_timer = None
+        self.timer_pause_button = None
+        self.timer_label = SubtitleLabel()
+        self.timer_start_button = MPushButton()
+        self.timer_pause_flag = False
         self.system_count_down = QTimer()
         self._extend_layout = MQGridLayout(None)
         self.home_weather_re_get_button = MPushButton()
@@ -93,17 +93,17 @@ class Window(MSFluentWindow):
         self.a3 = QPixmap(self.resource_ava)
         self.a4 = QPixmap(self.resource_ava)
         self.calc_time = 300
-        self.system_timer = None
+        self.system_countdown = None
         self.layout_app_card1 = None
         self.timePicker = None
-        self.timer_start_button = SwitchButton()
-        self.timer_label1 = None
-        self.timer_label2 = None
+        self.countdown_start_button = SwitchButton()
+        self.countdown_label1 = None
+        self.countdown_label2 = None
         self.current_time = None
         self.app_card1 = None
-        self.progress_circle_timer = None
+        self.progress_circle_countdown = None
         self.time_count = 0
-        self.countdown_count = 0
+        self.timer_count = 0
         self.extend_card2_tip = None
         self.layout_home_card1 = None
         self.layout_card3 = None
@@ -116,8 +116,8 @@ class Window(MSFluentWindow):
         self.home_card2 = None
         self.home_photo_show = None
         Utils.create_file_dir()
-        self.current_dir = os.getcwd() + "\\Texture\\"
-        self.extend_slider_value = 0.0
+        self.current_dir = os.getcwd().replace("\\", "/") + "/Texture/"
+        self.extend_slider_value = None
         self.extend_slider = Slider(None)
         self.extend_combobox = MComboBox()
         self.pixmap_type = "旋转"
@@ -314,7 +314,7 @@ class Window(MSFluentWindow):
     def initAppInterface(self):
         layout = MQGridLayout(self.appInterface)
         layout.setAlignment(Qt.AlignTop)
-        self.system_timer = QTimer(self.appInterface, timeout=self.run_timer)
+        self.system_countdown = QTimer(self.appInterface, timeout=self.run_countdown)
         self.app_card1 = MSimpleCardWidget()
         self.layout_app_card1 = MFLayout(self.app_card1)
         self.layout_app_card1.setAlignment(Qt.AlignHCenter)
@@ -328,143 +328,63 @@ class Window(MSFluentWindow):
         self.current_time = QTime().currentTime()
 
         # 定义指示器
-        self.progress_circle_timer = ProgressRing()
+        self.progress_circle_countdown = ProgressRing()
 
         # 设置进度环取值范围和当前值
-        self.progress_circle_timer.setRange(0, 100)
+        self.progress_circle_countdown.setRange(0, 100)
 
         # 显示进度环内文本
-        self.progress_circle_timer.setTextVisible(True)
+        self.progress_circle_countdown.setTextVisible(True)
 
         # 调整进度环大小
-        self.progress_circle_timer.setFixedSize(80, 80)
+        self.progress_circle_countdown.setFixedSize(80, 80)
 
         # 调整厚度
-        self.progress_circle_timer.setStrokeWidth(14)
+        self.progress_circle_countdown.setStrokeWidth(14)
 
         # 时间发生改变
         self.timePicker.timeChanged.connect(lambda time: self.get_calc_time(time.toString()))
-        self.timer_start_button = SwitchButton()
-        self.timer_start_button.setOnText("关闭倒计时")
-        self.timer_start_button.setOffText("开始倒计时")
-        self.timer_start_button.setFixedSize(128, 30)
-        self.timer_label1 = StrongBodyLabel("倒计时时间选择->")
-        self.timer_label1.setFixedSize(120, 30)
-        self.timer_start_button.checkedChanged.connect(self.timer_button_action)
+        self.countdown_start_button = SwitchButton()
+        self.countdown_start_button.setOnText("关闭倒计时")
+        self.countdown_start_button.setOffText("开始倒计时")
+        self.countdown_start_button.setFixedSize(128, 30)
+        self.countdown_label1 = StrongBodyLabel("倒计时时间选择->")
+        self.countdown_label1.setFixedSize(120, 30)
+        self.countdown_start_button.checkedChanged.connect(self.countdown_button_action)
 
-        self.layout_app_card1.addWidget(self.timer_label1)
+        self.layout_app_card1.addWidget(self.countdown_label1)
         self.layout_app_card1.addWidget(self.timePicker)
-        self.layout_app_card1.addWidget(self.timer_start_button)
-        self.layout_app_card1.addWidget(self.progress_circle_timer)
+        self.layout_app_card1.addWidget(self.countdown_start_button)
+        self.layout_app_card1.addWidget(self.progress_circle_countdown)
 
-        self.system_count_down = QTimer(self.appInterface, timeout=self.run_countdown)
+        self.system_count_down = QTimer(self.appInterface, timeout=self.run_timer)
         self.app_card2 = MSimpleCardWidget()
         self.layout_app_card2 = MFLayout(self.app_card2)
         self.layout_app_card2.setAlignment(Qt.AlignHCenter)
-        self.countdown_start_button = SwitchButton()
-        self.countdown_start_button.setOffText("开始计时")
-        self.countdown_start_button.setOnText("停止计时")
-        self.countdown_start_button.setFixedSize(114, 30)
+        self.timer_start_button = SwitchButton()
+        self.timer_start_button.setOffText("开始计时")
+        self.timer_start_button.setOnText("停止计时")
+        self.timer_start_button.setFixedSize(114, 30)
 
-        self.countdown_pause_button = MPushButton("暂停计时", ficon.PAUSE_BOLD)
+        self.timer_pause_button = MPushButton("暂停计时", ficon.PAUSE_BOLD)
 
         # 定义指示器
-        self.progress_circle_countdown = ProgressBar()
+        self.progress_circle_timer = ProgressBar()
 
-        self.progress_circle_countdown.setRange(0, 10)
+        self.progress_circle_timer.setRange(0, 10)
 
-        self.progress_circle_countdown.setFormat("v")
-        self.countdown_start_button.checkedChanged.connect(self.countdown_button_action)
-        self.countdown_pause_button.clicked.connect(self.countdown_button_pause)
-        self.countdown_label = SubtitleLabel("⌛未开始计时")
-        self.layout_app_card2.addWidget(self.countdown_label)
-        self.layout_app_card2.addWidget(self.countdown_start_button)
+        self.progress_circle_timer.setFormat("v")
+        self.timer_start_button.checkedChanged.connect(self.timer_button_action)
+        self.timer_pause_button.clicked.connect(self.timer_button_pause)
+        self.timer_label = SubtitleLabel("⌛未开始计时")
+        self.layout_app_card2.addWidget(self.timer_label)
+        self.layout_app_card2.addWidget(self.timer_start_button)
 
-        self.layout_app_card2.addWidget(self.countdown_pause_button)
-        self.layout_app_card2.addWidget(self.progress_circle_countdown)
+        self.layout_app_card2.addWidget(self.timer_pause_button)
+        self.layout_app_card2.addWidget(self.progress_circle_timer)
 
         layout.addWidget(self.app_card1, 0, 0)
         layout.addWidget(self.app_card2, 0, 1)
-
-    # Glayout
-    # def initAppInterface(self):
-    #     layout = MQGridLayout(self.appInterface)
-    #     layout.setAlignment(Qt.AlignTop)
-    #     self.system_timer = QTimer(self.appInterface, timeout=self.run_timer)
-    #     self.app_card1 = MSimpleCardWidget()
-    #     self.layout_app_card1 = MQGridLayout(self.app_card1)
-    #     self.layout_app_card1.setAlignment(Qt.AlignHCenter)
-    #
-    #     # 定义倒计时
-    #     self.timePicker = TimePicker(None, True)
-    #     self.timePicker.setColumnFormatter(0, Utils.HoursFormatter())
-    #     self.timePicker.setColumnFormatter(1, Utils.MinuteFormatter())
-    #     self.timePicker.setColumnFormatter(2, Utils.SecondsFormatter())
-    #     # 获取当前时间
-    #     self.current_time = QTime().currentTime()
-    #
-    #     # 定义指示器
-    #     self.progress_circle_timer = ProgressRing()
-    #
-    #     # 设置进度环取值范围和当前值
-    #     self.progress_circle_timer.setRange(0, 100)
-    #
-    #     # 显示进度环内文本
-    #     self.progress_circle_timer.setTextVisible(True)
-    #
-    #     # 调整进度环大小
-    #     self.progress_circle_timer.setFixedSize(80, 80)
-    #
-    #     # 调整厚度
-    #     self.progress_circle_timer.setStrokeWidth(14)
-    #
-    #     # 时间发生改变
-    #     self.timePicker.timeChanged.connect(lambda time: self.get_calc_time(time.toString()))
-    #     self.timer_start_button = SwitchButton()
-    #     self.timer_start_button.setOnText("关闭倒计时")
-    #     self.timer_start_button.setOffText("开始倒计时")
-    #     self.timer_label1 = StrongBodyLabel("倒计时时间选择↓")
-    #     self.timer_start_button.checkedChanged.connect(self.timer_button_action)
-    #
-    #     self.layout_app_card1.addWidget(self.timer_label1, 0, 0)
-    #     self.layout_app_card1.addWidget(self.timePicker, 1, 0)
-    #     self.layout_app_card1.addWidget(self.timer_start_button, 2, 0)
-    #     self.layout_app_card1.addWidget(self.progress_circle_timer, 0, 1, 3, 1)
-    #
-    #     self.system_count_down = QTimer(self.appInterface, timeout=self.run_countdown)
-    #     self.app_card2 = MSimpleCardWidget()
-    #     self.layout_app_card2 = MQGridLayout(self.app_card2)
-    #     self.layout_app_card2.setAlignment(Qt.AlignHCenter)
-    #     self.countdown_start_button = SwitchButton()
-    #     self.countdown_start_button.setOffText("开始计时")
-    #     self.countdown_start_button.setOnText("停止计时")
-    #
-    #     self.countdown_pause_button = MPushButton("暂停计时", ficon.PAUSE_BOLD)
-    #
-    #     # 定义指示器
-    #     self.progress_circle_countdown = ProgressBar()
-    #
-    #     self.progress_circle_countdown.setRange(0, 10)
-    #
-    #     # # 显示进度环内文本
-    #     # self.progress_circle_countdown.setTextVisible(True)
-    #     #
-    #     # # 调整进度环大小
-    #     # self.progress_circle_countdown.setFixedSize(80, 80)
-    #     #
-    #     # # 调整厚度
-    #     # self.progress_circle_countdown.setStrokeWidth(14)
-    #     self.progress_circle_countdown.setFormat("v")
-    #     self.countdown_start_button.checkedChanged.connect(self.countdown_button_action)
-    #     self.countdown_pause_button.clicked.connect(self.countdown_button_pause)
-    #     self.countdown_label = SubtitleLabel("⌛未开始计时")
-    #     self.layout_app_card2.addWidget(self.countdown_start_button, 0, 0,1,1)
-    #     self.layout_app_card2.addWidget(self.countdown_label, 0, 1,2,1)
-    #     self.layout_app_card2.addWidget(self.countdown_pause_button, 1, 0,1,1)
-    #     self.layout_app_card2.addWidget(self.progress_circle_countdown, 2, 0,1,1)
-    #
-    #     layout.addWidget(self.app_card1, 0, 0)
-    #     layout.addWidget(self.app_card2, 0, 1)
 
     def initExtendInterface(self):
         self._extend_layout = MQGridLayout(self.extendInterface)
@@ -516,8 +436,8 @@ class Window(MSFluentWindow):
             'By BaiShang',
             self
         )
-        w.yesButton.setText('1')
-        w.cancelButton.setText('2')
+        w.yesButton.setText('打开b站链接')
+        w.cancelButton.setText('取消')
 
         if w.exec():
             QDesktopServices.openUrl(QUrl("https://space.bilibili.com/188801893?spm_id_from=333.1007.0.0"))
@@ -568,6 +488,13 @@ class Window(MSFluentWindow):
                 w.setCustomBackgroundColor('white', '#202020')
 
     def show_flyout_view(self):
+        """
+        显示弹出视图。
+
+        创建一个弹出视图，配置标题、内容、图像和可关闭性。然后，通过添加间距来调整视图内部组件的布局。
+        最后，使用飞出动画方式显示视图，并在视图关闭时关联关闭操作。
+        """
+        # 创建弹出视图，配置标题、内容、图像和是否可关闭
         view = FlyoutView(
             title='BaiShang',
             content="MAVERICK",
@@ -575,130 +502,232 @@ class Window(MSFluentWindow):
             isClosable=True
         )
 
-        # add button to view
-
-        # adjust layout (optional)
+        # 调整视图内部布局的间距，以优化显示效果
         view.widgetLayout.insertSpacing(1, 15)
         view.widgetLayout.addSpacing(11)
 
-        # show view
+        # 使用飞出动画方式显示视图，并在视图关闭时关联关闭操作
         w = Flyout.make(view, self.card1_ava_card1, self, aniType=FlyoutAnimationType.SLIDE_RIGHT)
         view.closed.connect(w.close)
 
     def get_calc_time(self, time: str):
+        """
+        将输入的时间字符串转换为总秒数。
+
+        尝试将时间字符串按照冒号分隔，然后通过Utils类的静态方法time_to_seconds转换为秒。
+        如果转换过程中发生异常，则通过show_info_bar方法显示异常信息。
+
+        参数:
+        time (str): 表示时间的字符串，格式为"hh:mm"。
+
+        异常:
+        可能抛出任何在时间转换过程中发生的异常。
+        """
         try:
+            # 将时间字符串按冒号分割成小时和分钟
             time = time.split(":")
+            # 将分割后的时间转换为总秒数
             self.calc_time = Utils.time_to_seconds(time)
         except Exception as e:
-            self.show_info_bar(str(e))
-
-    def timer_button_action(self):
-        res = self.timer_start_button.checked
-        try:
-            if res:
-                self.timer_start_button.setOnText("关闭倒计时")
-                self.system_timer.start(1000)
-                self.show_info_bar("开始", "success", "倒计时")
-            else:
-                self.timer_start_button.setOffText("开始倒计时")
-                self.time_count = 0
-                self.progress_circle_timer.setValue(0)
-                self.system_timer.stop()
-                self.show_info_bar("关闭", "success", "倒计时")
-        except Exception as e:
-            self.show_info_bar(str(e))
-
-    def run_timer(self):
-        self.time_count += 1
-        try:
-            percent = int((self.time_count / self.calc_time) * 100)
-            if percent > 100:
-                self.timer_start_button.setChecked(False)
-                self.show_info_bar("倒计时完成", "success", "计时器")
-            else:
-                self.progress_circle_timer.setValue(percent)
-        except Exception as e:
+            # 显示异常信息
             self.show_info_bar(str(e))
 
     def countdown_button_action(self):
+        """
+        处理计时器按钮的点击事件。
+
+        根据按钮的选中状态，启动或停止计时器，并相应地更新用户界面。
+        """
+        # 获取计时器启动按钮的选中状态
         res = self.countdown_start_button.checked
         try:
             if res:
-                self.system_count_down.start(100)
-                self.show_info_bar("开始", "success", "计时")
-                # self.progress_circle_countdown.start()
+                # 当按钮被选中时，启动计时器，并更新按钮文本
+                self.countdown_start_button.setOnText("关闭倒计时")
+                self.system_countdown.start(1000)
+                self.show_info_bar("开始", "success", "倒计时")
             else:
-                self.countdown_pause_button.setText("暂停计时")
-                self.countdown_pause_button.setIcon(ficon.PAUSE_BOLD)
-                self.system_count_down.stop()
-                self.show_info_bar("关闭", "success", "计时")
-                self.countdown_label.setText("⌛未开始计时")
-                # self.progress_circle_countdown.stop()
-                self.countdown_count = 0
-                self.progress_circle_countdown.setValue(self.countdown_count)
+                # 当按钮未被选中时，停止计时器，并重置相关界面元素
+                self.countdown_start_button.setOffText("开始倒计时")
+                self.time_count = 0
+                self.progress_circle_countdown.setValue(0)
+                self.system_countdown.stop()
+                self.show_info_bar("关闭", "success", "倒计时")
         except Exception as e:
-            self.show_info_bar(str(e))
-
-    def countdown_button_pause(self):
-        try:
-            if self.countdown_start_button.checked:
-
-                if self.countdown_pause_flag:
-                    self.countdown_pause_button.setText("暂停计时")
-                    self.countdown_pause_button.setIcon(ficon.PAUSE_BOLD)
-                    self.system_count_down.start(100)
-                    self.show_info_bar("恢复", "success", "计时")
-                else:
-                    self.countdown_pause_button.setText("恢复计时")
-                    self.countdown_pause_button.setIcon(ficon.PLAY_SOLID)
-                    self.system_count_down.stop()
-                    self.show_info_bar("暂停", "success", "计时")
-                self.countdown_pause_flag = not self.countdown_pause_flag
-        except Exception as e:
+            # 异常情况下，通过信息栏显示错误信息
             self.show_info_bar(str(e))
 
     def run_countdown(self):
-        self.countdown_count += 1
-        s = int(self.countdown_count / 10)
-        self.progress_circle_countdown.setValue(self.countdown_count % 10 + 1)
+        """
+        运行计时器，根据设定的计算时间更新进度，并在完成时触发相应操作。
+
+        此方法主要负责更新计时器的进度，并在计时完成时给出相应的反馈。它通过增加时间计数，
+        根据当前计数和总计算时间计算进度百分比，并更新进度圈的值。如果进度达到100%，
+        则表示计时完成，此时会关闭计时器开关并显示完成消息。
+        """
+        # 增加时间计数，用于计算进度
+        self.time_count += 1
+        try:
+            # 计算当前进度的百分比
+            percent = int((self.time_count / self.calc_time) * 100)
+            if percent > 100:
+                # 如果进度超过100%，计时器完成，关闭计时器开关，并显示完成消息
+                self.countdown_start_button.setChecked(False)
+                self.show_info_bar("倒计时完成", "success", "计时器")
+            else:
+                # 更新进度圈的值以反映当前进度
+                self.progress_circle_countdown.setValue(percent)
+        except Exception as e:
+            # 如果在计算过程中发生异常，显示异常信息
+            self.show_info_bar(str(e))
+
+    def timer_button_action(self):
+        """
+        倒计时按钮动作处理函数。
+
+        根据倒计时启动按钮的选中状态，决定是开始倒计时还是暂停/停止计时。
+        """
+        # 检查倒计时启动按钮是否被选中
+        res = self.timer_start_button.checked
+        try:
+            if res:
+                # 如果按钮被选中，开始计时
+                self.system_count_down.start(100)
+                # 显示开始计时的信息栏
+                self.show_info_bar("开始", "success", "计时")
+            else:
+                # 如果按钮未被选中，暂停/停止计时
+                self.timer_pause_button.setText("暂停计时")
+                self.timer_pause_button.setIcon(ficon.PAUSE_BOLD)
+                self.system_count_down.stop()
+                # 显示停止计时的信息栏
+                self.show_info_bar("关闭", "success", "计时")
+                # 重置计时标签文本和计时值
+                self.timer_label.setText("⌛未开始计时")
+                self.timer_count = 0
+                self.progress_circle_timer.setValue(self.timer_count)
+        except Exception as e:
+            # 如果发生异常，显示异常信息
+            self.show_info_bar(str(e))
+
+    def timer_button_pause(self):
+        """
+        控制计时按钮的暂停和恢复功能。
+
+        当倒计时已经开始且倒计时暂停标志为True时，按钮变为恢复计时状态；
+        当倒计时已经开始且倒计时暂停标志为False时，按钮变为暂停计时状态。
+
+        这个方法通过改变按钮的文本和图标以及系统计时的状态来实现暂停和恢复功能。
+        """
+        try:
+            # 检查计时启动按钮是否被选中
+            if self.timer_start_button.checked:
+                # 判断计时是否处于暂停状态
+                if self.timer_pause_flag:
+                    # 如果处于暂停状态，更新按钮为恢复计时，并启动计时
+                    self.timer_pause_button.setText("暂停计时")
+                    self.timer_pause_button.setIcon(ficon.PAUSE_BOLD)
+                    self.system_count_down.start(100)
+                    self.show_info_bar("恢复", "success", "计时")
+                else:
+                    # 如果不处于暂停状态，更新按钮为暂停计时，并停止计时
+                    self.timer_pause_button.setText("恢复计时")
+                    self.timer_pause_button.setIcon(ficon.PLAY_SOLID)
+                    self.system_count_down.stop()
+                    self.show_info_bar("暂停", "success", "计时")
+                # 切换计时暂停标志的状态
+                self.timer_pause_flag = not self.timer_pause_flag
+        except Exception as e:
+            # 如果发生异常，通过信息栏显示异常信息
+            self.show_info_bar(str(e))
+
+    def run_timer(self):
+        """
+        启动倒计时逻辑。
+
+        每次调用此方法时，倒计时计数器都会增加，并根据当前的倒计时进度更新进度圈和倒计时标签的显示。
+        倒计时以小时、分钟和秒的格式显示。
+        """
+        # 增加倒计时计数器
+        self.timer_count += 1
+        # 计算已经过去的时间，单位为秒
+        s = int(self.timer_count / 10)
+        # 更新进度圈的值，显示当前倒计时的百分比
+        self.progress_circle_timer.setValue(self.timer_count % 10 + 1)
+        # 将秒数转换为小时、分钟和秒的格式
         res = Utils.second_to_time(s)
-        self.countdown_label.setText(f"  {res[0]}小时-{res[1]}分-{res[2]}秒")
+        # 更新倒计时标签的文本，显示转换后的時間格式
+        self.timer_label.setText(f"  {res[0]}小时-{res[1]}分-{res[2]}秒")
 
     def file_dir_get(self):
+        """
+        获取扩展拖拽编辑框中的文本内容，并根据该内容处理图片显示。
+
+        如果文本表示的路径包含至少两个目录层级，则尝试加载该路径下的图片，并根据图片的尺寸调整显示大小。
+        如果加载图片过程中发生异常，将异常信息显示在信息栏中。
+        """
+        # 获取扩展拖拽编辑框中的文本
         res = self.extend_drag_edit.text()
 
+        # 保存文件目录路径
         # self.show_info_bar(f"{inspect.stack()[0][3]} -> {res}")
         self.file_dir = self.extend_drag_edit.text()
+
+        # 检查路径是否包含至少两个目录，以确保它是有效的图片路径
         if len(res.split("/")) >= 2:
             try:
+                # 如果已经存在pixmaps，先从布局中移除
                 self.extend_card2_layout.removeWidget(self.pixmap)
+                # 加载新的图片
                 self.pix = QPixmap(self.file_dir)
+                # 获取图片的高度和宽度
                 pixh = self.pix.height()
                 pixw = self.pix.width()
+                # 计算比例，用于等比例调整图片大小
                 l = pixh / self.pic_h
                 self.pic_w = pixw // l
+                # 调整图片大小并设置到pixmap上
                 self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
+                # 将处理后的图片添加到布局中
                 self.extend_card2_layout.addWidget(self.pixmap)
+                # 设置布局的固定大小
                 self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
             except Exception as e:
+                # 如果在处理图片过程中发生异常，显示异常信息
                 self.show_info_bar(str(e))
 
     def cut_pic(self):
+        """
+        根据当前设置的文件目录和图片参数，裁剪图片并显示裁剪后的图片。
+        如果文件目录为空，则显示错误信息。
+        裁剪比例基于原始图片宽度和高度与目标宽度和高度的比例。
+        """
+        # 检查文件目录是否为空，如果为空，则显示错误信息
         if self.file_dir == "":
             self.show_info_bar("路径为空", "error", "错误")
         else:
             try:
+                # 分割文件路径获取图片名称
                 to = self.file_dir.split("/")
                 pit_name = to[-1]
+                # 打开图片文件
                 im = Image.open(self.file_dir)
-                print(self.pix.height()/self.pic_h)
-                new_size = (self.pixmap.get_qrect()[0] * (self.pix.width()/self.pic_w), self.pixmap.get_qrect()[1] * (self.pix.width()/self.pic_w), self.pixmap.get_qrect()[2] * (self.pix.height()/self.pic_h), self.pixmap.get_qrect()[3] * (self.pix.height()/self.pic_h))
-                print(self.pixmap.get_qrect(), new_size)
+                # 计算裁剪比例并打印验证
+                # 根据裁剪比例计算新图片的尺寸
+                new_size = (self.pixmap.get_qrect()[0] * (self.pix.width() / self.pic_w),
+                            self.pixmap.get_qrect()[1] * (self.pix.width() / self.pic_w),
+                            self.pixmap.get_qrect()[2] * (self.pix.height() / self.pic_h),
+                            self.pixmap.get_qrect()[3] * (self.pix.height() / self.pic_h))
 
+                # 对图片进行裁剪
                 handled = im.crop(new_size)
+                # 生成新的文件名
                 fix_name = f"crop()+{pit_name}"
+                # 拼接新的文件路径并保存裁剪后的图片
                 new_file = self.current_dir + "/" + fix_name
                 handled.save(new_file)
+
+                # 从布局中移除旧的图片组件，加载新的裁剪后的图片
                 self.extend_card2_layout.removeWidget(self.pixmap)
                 self.pix = QPixmap(new_file)
                 pixh = self.pix.height()
@@ -707,146 +736,357 @@ class Window(MSFluentWindow):
                 self.pic_w = pixw // l
                 self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
                 self.extend_card2_layout.addWidget(self.pixmap)
+
+                # 更新图片显示尺寸和文件路径显示
                 self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
                 self.extend_drag_edit.setText(new_file)
+                # 更新文件目录
                 self.file_dir_get()
             except Exception as e:
+                # 如果在处理过程中发生异常，则显示异常信息
                 self.show_info_bar(str(e))
 
     def handle_pixmap(self):
-        Utils.create_file_dir()
-        if self.file_dir == "":
-            self.show_info_bar("路径为空", "error", "错误")
-        else:
-            try:
-                new_file = ""
-                to = self.file_dir.split("/")
-                pit_name = to[-1]
-                im = Image.open(self.file_dir)
+        """
+        处理图片文件，根据用户选择的图片处理类型（如旋转、缩小、模糊等），对图片进行相应处理。
+        创建新的图片文件，并在界面中显示处理后的图片。
+        """
+        try:
+            # 创建文件夹
+            Utils.create_file_dir()
+            # 检查文件目录是否为空
+            if not self.file_dir:
+                self.show_info_bar("路径为空", "error", "错误")
+                return
+
+            # 初始化新文件名
+            new_file = ""
+            # 分割文件路径获取文件名
+            to = self.file_dir.split('/')
+            pit_name = to[-1]
+            # 打开图片文件
+            with Image.open(self.file_dir) as im:
+                # 获取滑块的值，用于确定图片处理的程度
                 slider_value = self.extend_slider_value
-                match self.pixmap_type:
-                    case "旋转":
-                        handled = im.rotate(int(slider_value * 360))
-                        fix_name = f"rotate({str(int(slider_value * 360))})+{pit_name}"
-                        new_file = self.current_dir + "/" + fix_name
-                        handled.save(new_file)
-                    case "缩小":
-                        q = slider_value == 0 and 0.1 or slider_value
-                        tup = (int(im.size[0] * q), int(im.size[1] * q))
-                        handled = im.resize(tup)
-                        fix_name = f"resize({str(tup)})+{pit_name}"
-                        new_file = self.current_dir + "/" + fix_name
-                        handled.save(new_file)
-                    case "模糊":
-                        handled = im.filter(ImageFilter.GaussianBlur(int(slider_value * 100)))
-                        fix_name = f"blur({int(slider_value * 100)})+{pit_name}"
-                        new_file = self.current_dir + "/" + fix_name
-                        handled.save(new_file)
-                    case "轮廓":
-                        handled = im.filter(ImageFilter.CONTOUR)
-                        fix_name = f"contour+{pit_name}"
-                        new_file = self.current_dir + "/" + fix_name
-                        handled.save(new_file)
-                    case "平滑":
-                        handled = im.filter(ImageFilter.SMOOTH_MORE)
-                        fix_name = f"smooth+{pit_name}"
-                        new_file = self.current_dir + "/" + fix_name
-                        handled.save(new_file)
-                    case "锐化":
-                        handled = im.filter(ImageFilter.SHARPEN)
-                        fix_name = f"sharpen+{pit_name}"
-                        new_file = self.current_dir + "/" + fix_name
-                        handled.save(new_file)
-                    case "边界":
-                        handled = im.filter(ImageFilter.FIND_EDGES)
-                        fix_name = f"find_edges+{pit_name}"
-                        new_file = self.current_dir + "/" + fix_name
-                        handled.save(new_file)
-                    case "边界加强":
-                        handled = im.filter(ImageFilter.EDGE_ENHANCE_MORE)
-                        fix_name = f"edge_enhance+{pit_name}"
-                        new_file = self.current_dir + "/" + fix_name
-                        handled.save(new_file)
-                    case "浮雕":
-                        handled = im.filter(ImageFilter.EMBOSS)
-                        fix_name = f"emboss+{pit_name}"
-                        new_file = self.current_dir + "/" + fix_name
-                        handled.save(new_file)
-                    case "细节":
-                        handled = im.filter(ImageFilter.DETAIL)
-                        fix_name = f"detail+{pit_name}"
-                        new_file = self.current_dir + "/" + fix_name
-                        handled.save(new_file)
-                self.extend_card2_layout.removeWidget(self.pixmap)
-                self.pix = QPixmap(new_file)
-                pixh = self.pix.height()
-                pixw = self.pix.width()
-                l = pixh / self.pic_h
-                self.pic_w = pixw // l
-                self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
-                self.extend_card2_layout.addWidget(self.pixmap)
-                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
-                self.extend_drag_edit.setText(new_file)
-                self.file_dir_get()
-            except Exception as e:
-                self.show_info_bar(str(e))
+
+                # 根据图片处理类型进行不同的操作
+                handled, fix_name = self.process_image(im, slider_value, pit_name)
+                new_file = os.path.join(self.current_dir, fix_name)
+
+            # 保存处理后的图片
+            handled.save(new_file)
+
+            # 更新UI显示处理后的图片
+            self.update_ui(new_file)
+
+        except Exception as e:
+            # 显示处理异常信息
+            self.show_info_bar(str(e))
+
+    def process_image(self, image, slider_value, pit_name):
+        """
+        根据不同的处理类型对图片进行处理。
+        """
+        handled = None
+        fix_name = ""
+        match self.pixmap_type:
+            case "旋转":
+                handled = image.rotate(int(slider_value * 360))
+                fix_name = f"rotate({str(int(slider_value * 360))})+{pit_name}"
+            case "缩小":
+                # 计算缩小比例
+                q = slider_value == 0 and 0.1 or slider_value
+                # 计算新的尺寸
+                tup = (int(image.size[0] * q), int(image.size[1] * q))
+                handled = image.resize(tup)
+                fix_name = f"resize({str(tup)})+{pit_name}"
+
+            case "模糊":
+                # 模糊图片
+                handled = image.filter(ImageFilter.GaussianBlur(int(slider_value * 100)))
+                fix_name = f"blur({int(slider_value * 100)})+{pit_name}"
+            case "轮廓":
+                # 提取图片轮廓
+                handled = image.filter(ImageFilter.CONTOUR)
+                fix_name = f"contour+{pit_name}"
+            case "平滑":
+                # 平滑图片
+                handled = image.filter(ImageFilter.SMOOTH_MORE)
+                fix_name = f"smooth+{pit_name}"
+            case "锐化":
+                # 锐化图片
+                handled = image.filter(ImageFilter.SHARPEN)
+                fix_name = f"sharpen+{pit_name}"
+            case "边界":
+                # 提取图片边界
+                handled = image.filter(ImageFilter.FIND_EDGES)
+                fix_name = f"find_edges+{pit_name}"
+            case "边界加强":
+                # 加强图片边界
+                handled = image.filter(ImageFilter.EDGE_ENHANCE_MORE)
+                fix_name = f"edge_enhance+{pit_name}"
+            case "浮雕":
+                # 浮雕效果处理图片
+                handled = image.filter(ImageFilter.EMBOSS)
+                fix_name = f"emboss+{pit_name}"
+            case "细节":
+                # 强化图片细节
+                handled = image.filter(ImageFilter.DETAIL)
+                fix_name = f"detail+{pit_name}"
+            # 其他处理类型...
+        return handled, fix_name
+
+    def update_ui(self, new_file):
+        """
+        更新UI以显示处理后的图片。
+        """
+        # 从布局中移除原始图片
+        self.extend_card2_layout.removeWidget(self.pixmap)
+        # 加载处理后的图片
+        self.pix = QPixmap(new_file)
+        # 计算并设置图片显示的大小
+        pixh = self.pix.height()
+        pixw = self.pix.width()
+        l = pixh / self.pic_h
+        self.pic_w = pixw // l
+        self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
+        # 将处理后的图片添加回布局
+        self.extend_card2_layout.addWidget(self.pixmap)
+        # 设置界面大小
+        # 假设这里有必要的逻辑
+        # 更新图片文件路径显示
+        self.extend_drag_edit.setText(new_file)
+        # 更新文件目录
+        self.file_dir_get()
+
+    # def handle_pixmap(self):
+    #     """
+    #     处理图片文件，根据用户选择的图片处理类型（如旋转、缩小、模糊等），对图片进行相应处理。
+    #     创建新的图片文件，并在界面中显示处理后的图片。
+    #     """
+    #     # 创建文件夹
+    #     Utils.create_file_dir()
+    #     # 检查文件目录是否为空
+    #     if self.file_dir == "":
+    #         self.show_info_bar("路径为空", "error", "错误")
+    #     else:
+    #         try:
+    #             # 初始化新文件名
+    #             new_file = ""
+    #             # 分割文件路径获取文件名
+    #             to = self.file_dir.split("/")
+    #             pit_name = to[-1]
+    #             # 打开图片文件
+    #             im = Image.open(self.file_dir)
+    #             # 获取滑块的值，用于确定图片处理的程度
+    #             slider_value = self.extend_slider_value
+    #
+    #             # 根据图片处理类型进行不同的操作
+    #             match self.pixmap_type:
+    #                 case "旋转":
+    #                     # 旋转图片
+    #                     handled = im.rotate(int(slider_value * 360))
+    #                     # 构造新文件名
+    #                     fix_name = f"rotate({str(int(slider_value * 360))})+{pit_name}"
+    #                     new_file = self.current_dir + "/" + fix_name
+    #                     handled.save(new_file)
+    #                 case "缩小":
+    #                     # 计算缩小比例
+    #                     q = slider_value == 0 and 0.1 or slider_value
+    #                     # 计算新的尺寸
+    #                     tup = (int(im.size[0] * q), int(im.size[1] * q))
+    #                     # 缩小图片
+    #                     handled = im.resize(tup)
+    #                     fix_name = f"resize({str(tup)})+{pit_name}"
+    #                     new_file = self.current_dir + "/" + fix_name
+    #                     handled.save(new_file)
+    #                 case "模糊":
+    #                     # 模糊图片
+    #                     handled = im.filter(ImageFilter.GaussianBlur(int(slider_value * 100)))
+    #                     fix_name = f"blur({int(slider_value * 100)})+{pit_name}"
+    #                     new_file = self.current_dir + "/" + fix_name
+    #                     handled.save(new_file)
+    #                 case "轮廓":
+    #                     # 提取图片轮廓
+    #                     handled = im.filter(ImageFilter.CONTOUR)
+    #                     fix_name = f"contour+{pit_name}"
+    #                     new_file = self.current_dir + "/" + fix_name
+    #                     handled.save(new_file)
+    #                 case "平滑":
+    #                     # 平滑图片
+    #                     handled = im.filter(ImageFilter.SMOOTH_MORE)
+    #                     fix_name = f"smooth+{pit_name}"
+    #                     new_file = self.current_dir + "/" + fix_name
+    #                     handled.save(new_file)
+    #                 case "锐化":
+    #                     # 锐化图片
+    #                     handled = im.filter(ImageFilter.SHARPEN)
+    #                     fix_name = f"sharpen+{pit_name}"
+    #                     new_file = self.current_dir + "/" + fix_name
+    #                     handled.save(new_file)
+    #                 case "边界":
+    #                     # 提取图片边界
+    #                     handled = im.filter(ImageFilter.FIND_EDGES)
+    #                     fix_name = f"find_edges+{pit_name}"
+    #                     new_file = self.current_dir + "/" + fix_name
+    #                     handled.save(new_file)
+    #                 case "边界加强":
+    #                     # 加强图片边界
+    #                     handled = im.filter(ImageFilter.EDGE_ENHANCE_MORE)
+    #                     fix_name = f"edge_enhance+{pit_name}"
+    #                     new_file = self.current_dir + "/" + fix_name
+    #                     handled.save(new_file)
+    #                 case "浮雕":
+    #                     # 浮雕效果处理图片
+    #                     handled = im.filter(ImageFilter.EMBOSS)
+    #                     fix_name = f"emboss+{pit_name}"
+    #                     new_file = self.current_dir + "/" + fix_name
+    #                     handled.save(new_file)
+    #                 case "细节":
+    #                     # 强化图片细节
+    #                     handled = im.filter(ImageFilter.DETAIL)
+    #                     fix_name = f"detail+{pit_name}"
+    #                     new_file = self.current_dir + "/" + fix_name
+    #                     handled.save(new_file)
+    #
+    #             # 从布局中移除原始图片
+    #             self.extend_card2_layout.removeWidget(self.pixmap)
+    #             # 加载处理后的图片
+    #             self.pix = QPixmap(new_file)
+    #             # 计算并设置图片显示的大小
+    #             pixh = self.pix.height()
+    #             pixw = self.pix.width()
+    #             l = pixh / self.pic_h
+    #             self.pic_w = pixw // l
+    #             self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
+    #             # 将处理后的图片添加回布局
+    #             self.extend_card2_layout.addWidget(self.pixmap)
+    #             # 设置界面大小
+    #             self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
+    #             # 更新图片文件路径显示
+    #             self.extend_drag_edit.setText(new_file)
+    #             # 更新文件目录
+    #             self.file_dir_get()
+    #         except Exception as e:
+    #             # 显示处理异常信息
+    #             self.show_info_bar(str(e))
 
     def pixmap_get_type(self):
+        """
+        根据扩展组合框的当前文本，确定图片操作类型，并据此显示或隐藏扩展滑块及其标签。
+
+        此方法处理用户界面的动态变化，根据用户选择的图片操作类型（如旋转、缩小、模糊等），决定是否显示扩展滑块及其标签。
+        这是因为某些图片操作类型可能不需要用户输入额外的参数（如旋转），而其他操作（如缩小、模糊）可能需要用户指定程度或量。
+        """
+
+        # 获取扩展组合框当前选定的文本
         res = self.extend_combobox.currentText()
+
+        # 如果选定的操作不是旋转、缩小或模糊，则隐藏扩展滑块及其标签
         # self.show_info_bar(f"{inspect.stack()[0][3]} -> {res}")
         if res != "旋转" and res != "缩小" and res != "模糊":
             self.extend_slider.hide()
             self.extend_slider_label.hide()
         else:
+            # 否则，显示扩展滑块及其标签
             self.extend_slider.show()
             self.extend_slider_label.show()
+
+        # 保存当前选择的图片操作类型
         self.pixmap_type = res
 
     def weather_position_get(self):
+        """
+        获取天气位置信息，并根据该信息更新天气卡片的显示。
+
+        从家天气卡片组合框中获取选定的城市名称。如果名称是中文且不为空，则尝试获取该城市的天气数据，
+        并更新天气卡片上的各个标签。如果获取天气数据失败，则将标签设置为未找到的提示。
+        """
+        # 获取用户在家庭天气卡片组合框中选择的城市名称
         res = self.home_weather_card_combobox.text()
+        # 将获取到的城市名称保存为当前的天气位置
         # self.show_info_bar(f"{inspect.stack()[0][3]} -> {res}")
         self.weather_position = res
+
+        # 如果天气位置为空，则不进行后续操作
         if len(self.weather_position) == 0:
             return
+
+        # 如果天气位置的首字符是中文字符
         if '\u4e00' <= self.weather_position[0] <= '\u9fff':
             try:
+                # 尝试根据天气位置和城市代码获取天气数据
                 data = re_get_weather(self.weather_position, self.city_code)
+                # 更新天气卡片上的各个标签，显示天气数据
                 self.card2_weather_card_label1.setDes(data[0])
                 self.card2_weather_card_label2.setDes(data[1])
                 self.card2_weather_card_label3.setDes(data[2])
                 self.card2_weather_card_label4.setDes(data[3])
             except Exception as e:
+                # 如果获取天气数据失败，将卡片上的标签设置为未找到的提示
                 self.card2_weather_card_label1.setDes("未选择")
                 self.card2_weather_card_label2.setDes("未找到")
                 self.card2_weather_card_label3.setDes("未找到")
                 self.card2_weather_card_label4.setDes("未找到")
 
     def re_get_weather_button(self):
+        """
+        根据用户选择的城市获取天气信息，并更新界面显示。
+        如果天气信息获取成功，更新天气标签的描述；
+        如果获取失败，将标签描述设置为“未找到”。
+        """
+        # 检查是否有城市位置信息，如果没有，则不执行后续操作
         if len(self.weather_position) == 0:
             return
+        # 检查城市位置信息是否为中文字符
         if '\u4e00' <= self.weather_position[0] <= '\u9fff':
             try:
+                # 使用正则表达式获取天气信息
                 data = re_get_weather(self.weather_position, self.city_code)
+                # 更新天气标签的描述
                 self.card2_weather_card_label1.setDes(data[0])
                 self.card2_weather_card_label2.setDes(data[1])
                 self.card2_weather_card_label3.setDes(data[2])
                 self.card2_weather_card_label4.setDes(data[3])
+                # 显示获取成功的提示信息
                 self.show_info_bar("获取成功", "success", self.weather_position)
             except Exception as e:
+                # 如果获取天气信息失败，更新天气标签的描述为“未找到”
                 self.card2_weather_card_label1.setDes("未选择")
                 self.card2_weather_card_label2.setDes("未找到")
                 self.card2_weather_card_label3.setDes("未找到")
                 self.card2_weather_card_label4.setDes("未找到")
+                # 显示获取失败的提示信息
                 self.show_info_bar("获取失败", "error", self.weather_position)
 
-    def extend_get_slider(self):
-        res = self.extend_slider.value() / 100
-        self.extend_slider_label.setText(str(self.extend_slider.value()) + "%")
-        # self.show_info_bar(f"{inspect.stack()[0][3]} -> {res}")
-        self.extend_slider_value = res
+    def update_slider_label(self):
+        """
+        更新滑块标签的文本，显示当前滑块的值（以百分比形式）。
+        """
+        try:
+            slider_value = self.extend_slider.value()
+            if slider_value is not None and slider_value >= 0:
+                percent_value = slider_value / 100
+                self.extend_slider_label.setText(f"{slider_value}%")  # 直接使用数值，避免额外的字符串拼接
+                self.extend_slider_value = percent_value
+            else:
+                # 处理异常值，例如设置为0或显示错误信息
+                self.extend_slider_label.setText("Invalid Value")
+                self.extend_slider_value = None
+        except Exception as e:
+            # 异常处理逻辑，例如记录日志或显示错误信息
+            print(f"An error occurred: {e}")
+            self.extend_slider_label.setText("Error")
+            self.extend_slider_value = None
 
-    def tickcount_upd(self):
-        self.frametime += 1
+    def extend_get_slider(self):
+        """
+        检查滑块值是否已改变并更新滑块标签。此方法应由滑块值改变的信号触发。
+        """
+        # 由于这个方法现在假设它只在滑块值改变时被调用，
+        # 因此不需要每次调用时都重新计算百分比。
+        self.update_slider_label()
+
 
 
 if __name__ == '__main__':
