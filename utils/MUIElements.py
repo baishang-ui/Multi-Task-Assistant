@@ -129,23 +129,29 @@ class MDescriptionCard(HeaderCardWidget):
 
 
 class MImageLabel(ImageLabel):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, candraw=True):
         super().__init__(parent=parent)
         super().setBorderRadius(14, 14, 14, 14)
         self.qr = None
+        self.candraw = candraw
         self.start_point = None
         self.end_point = None
         self.start = False
         self.drawing = False
-        self.setCursor(Qt.CrossCursor)
-        self.setMouseTracking(True)
+        if self.candraw:
+            self.setCursor(Qt.CrossCursor)
+            self.setMouseTracking(True)
 
     def paintEvent(self, event):
         super(MImageLabel, self).paintEvent(event)
-        if self.drawing:
+        if self.drawing and self.candraw:
             painter = QPainter()
+            painter.setRenderHint(QPainter.Antialiasing)
+            painter.setRenderHint(QPainter.HighQualityAntialiasing)
             painter.begin(self)
-            pen = QPen(Qt.white, 1)
+            pen = QPen(Qt.white, 4)
+            pen.setStyle(Qt.SolidLine)
+            pen.setJoinStyle(Qt.RoundJoin)
             painter.setPen(pen)
             self.qr = QRect(self.start_point, self.end_point)
             painter.drawRect(self.qr)
@@ -158,19 +164,19 @@ class MImageLabel(ImageLabel):
             self.start = True
 
     def mouseReleaseEvent(self, event):
-        print(self.get_qrect())
         if self.drawing:
             self.drawing = False
             self.start = False
 
     def mouseMoveEvent(self, event):
-        if self.start:
+        if self.start and self.candraw:
             self.end_point = event.pos()
             self.drawing = True
             self.update()
 
     def get_qrect(self):
         return [self.qr.x(), self.qr.y(), self.qr.x() + self.qr.width(), self.qr.y() + self.qr.height()]
+
 
 class MPushButton(PushButton):
 

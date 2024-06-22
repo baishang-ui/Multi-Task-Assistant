@@ -59,7 +59,7 @@ class Window(MSFluentWindow):
         self.extend_slider_label = BodyLabel()
         setTheme(Theme.AUTO)
         setThemeColor("#b9beed")
-        self.pic_h = 300
+        self.pic_h = 400
         self.pic_w = 0
         self.all_weather = None
         self.weather_state = False
@@ -299,7 +299,7 @@ class Window(MSFluentWindow):
         self.home_card3 = MSimpleCardWidget()
         self.layout_card3 = MQGridLayout(self.home_card3)
 
-        image_label = MImageLabel()
+        image_label = MImageLabel(candraw=False)
         image_label.setImage(self.home_b_photo is None and self.resource_home_p or self.home_b_photo.scaled(1920, 1080))
         image_label.scaledToHeight(330)
 
@@ -695,7 +695,7 @@ class Window(MSFluentWindow):
                 # 将处理后的图片添加到布局中
                 self.extend_card2_layout.addWidget(self.pixmap)
                 # 设置布局的固定大小
-                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
+                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 480)
             except Exception as e:
                 # 如果在处理图片过程中发生异常，显示异常信息
                 self.show_info_bar(str(e))
@@ -742,7 +742,7 @@ class Window(MSFluentWindow):
                 self.extend_card2_layout.addWidget(self.pixmap)
 
                 # 更新图片显示尺寸和文件路径显示
-                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
+                self.extend_card2.setFixedSize(int(self.pic_w) + 40, 480)
                 self.extend_drag_edit.setText(new_file)
                 # 更新文件目录
                 self.file_dir_get()
@@ -862,118 +862,6 @@ class Window(MSFluentWindow):
         self.extend_drag_edit.setText(new_file)
         # 更新文件目录
         self.file_dir_get()
-
-    # def handle_pixmap(self):
-    #     """
-    #     处理图片文件，根据用户选择的图片处理类型（如旋转、缩小、模糊等），对图片进行相应处理。
-    #     创建新的图片文件，并在界面中显示处理后的图片。
-    #     """
-    #     # 创建文件夹
-    #     Utils.create_file_dir()
-    #     # 检查文件目录是否为空
-    #     if self.file_dir == "":
-    #         self.show_info_bar("路径为空", "error", "错误")
-    #     else:
-    #         try:
-    #             # 初始化新文件名
-    #             new_file = ""
-    #             # 分割文件路径获取文件名
-    #             to = self.file_dir.split("/")
-    #             pit_name = to[-1]
-    #             # 打开图片文件
-    #             im = Image.open(self.file_dir)
-    #             # 获取滑块的值，用于确定图片处理的程度
-    #             slider_value = self.extend_slider_value
-    #
-    #             # 根据图片处理类型进行不同的操作
-    #             match self.pixmap_type:
-    #                 case "旋转":
-    #                     # 旋转图片
-    #                     handled = im.rotate(int(slider_value * 360))
-    #                     # 构造新文件名
-    #                     fix_name = f"rotate({str(int(slider_value * 360))})+{pit_name}"
-    #                     new_file = self.current_dir + "/" + fix_name
-    #                     handled.save(new_file)
-    #                 case "缩小":
-    #                     # 计算缩小比例
-    #                     q = slider_value == 0 and 0.1 or slider_value
-    #                     # 计算新的尺寸
-    #                     tup = (int(im.size[0] * q), int(im.size[1] * q))
-    #                     # 缩小图片
-    #                     handled = im.resize(tup)
-    #                     fix_name = f"resize({str(tup)})+{pit_name}"
-    #                     new_file = self.current_dir + "/" + fix_name
-    #                     handled.save(new_file)
-    #                 case "模糊":
-    #                     # 模糊图片
-    #                     handled = im.filter(ImageFilter.GaussianBlur(int(slider_value * 100)))
-    #                     fix_name = f"blur({int(slider_value * 100)})+{pit_name}"
-    #                     new_file = self.current_dir + "/" + fix_name
-    #                     handled.save(new_file)
-    #                 case "轮廓":
-    #                     # 提取图片轮廓
-    #                     handled = im.filter(ImageFilter.CONTOUR)
-    #                     fix_name = f"contour+{pit_name}"
-    #                     new_file = self.current_dir + "/" + fix_name
-    #                     handled.save(new_file)
-    #                 case "平滑":
-    #                     # 平滑图片
-    #                     handled = im.filter(ImageFilter.SMOOTH_MORE)
-    #                     fix_name = f"smooth+{pit_name}"
-    #                     new_file = self.current_dir + "/" + fix_name
-    #                     handled.save(new_file)
-    #                 case "锐化":
-    #                     # 锐化图片
-    #                     handled = im.filter(ImageFilter.SHARPEN)
-    #                     fix_name = f"sharpen+{pit_name}"
-    #                     new_file = self.current_dir + "/" + fix_name
-    #                     handled.save(new_file)
-    #                 case "边界":
-    #                     # 提取图片边界
-    #                     handled = im.filter(ImageFilter.FIND_EDGES)
-    #                     fix_name = f"find_edges+{pit_name}"
-    #                     new_file = self.current_dir + "/" + fix_name
-    #                     handled.save(new_file)
-    #                 case "边界加强":
-    #                     # 加强图片边界
-    #                     handled = im.filter(ImageFilter.EDGE_ENHANCE_MORE)
-    #                     fix_name = f"edge_enhance+{pit_name}"
-    #                     new_file = self.current_dir + "/" + fix_name
-    #                     handled.save(new_file)
-    #                 case "浮雕":
-    #                     # 浮雕效果处理图片
-    #                     handled = im.filter(ImageFilter.EMBOSS)
-    #                     fix_name = f"emboss+{pit_name}"
-    #                     new_file = self.current_dir + "/" + fix_name
-    #                     handled.save(new_file)
-    #                 case "细节":
-    #                     # 强化图片细节
-    #                     handled = im.filter(ImageFilter.DETAIL)
-    #                     fix_name = f"detail+{pit_name}"
-    #                     new_file = self.current_dir + "/" + fix_name
-    #                     handled.save(new_file)
-    #
-    #             # 从布局中移除原始图片
-    #             self.extend_card2_layout.removeWidget(self.pixmap)
-    #             # 加载处理后的图片
-    #             self.pix = QPixmap(new_file)
-    #             # 计算并设置图片显示的大小
-    #             pixh = self.pix.height()
-    #             pixw = self.pix.width()
-    #             l = pixh / self.pic_h
-    #             self.pic_w = pixw // l
-    #             self.pixmap.setPixmap(self.pix.scaled(int(self.pic_w), self.pic_h))
-    #             # 将处理后的图片添加回布局
-    #             self.extend_card2_layout.addWidget(self.pixmap)
-    #             # 设置界面大小
-    #             self.extend_card2.setFixedSize(int(self.pic_w) + 40, 380)
-    #             # 更新图片文件路径显示
-    #             self.extend_drag_edit.setText(new_file)
-    #             # 更新文件目录
-    #             self.file_dir_get()
-    #         except Exception as e:
-    #             # 显示处理异常信息
-    #             self.show_info_bar(str(e))
 
     def pixmap_get_type(self):
         """
