@@ -2,8 +2,8 @@ from pathlib import Path
 
 from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve, QRect
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QPen
-from PyQt5.QtWidgets import QVBoxLayout, QGridLayout
+from PyQt5.QtGui import QPainter, QPen, QColor
+from PyQt5.QtWidgets import QVBoxLayout, QGridLayout, QGraphicsDropShadowEffect
 from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit
 from qfluentwidgets import FlowLayout
 from qfluentwidgets import FluentIcon as ficon
@@ -62,7 +62,7 @@ class MSimpleCardWidget(SimpleCardWidget):
 class MFLayout(FlowLayout):
     def __init__(self, to):
         super().__init__(to, needAni=True)
-        super().setAnimation(550, QEasingCurve.InOutCubic)
+        super().setAnimation(500, QEasingCurve.InOutCubic)
         super().setContentsMargins(20, 20, 20, 20)
         super().setAlignment(Qt.AlignCenter)
 
@@ -185,3 +185,11 @@ class MPushButton(PushButton):
         setCustomStyleSheet(self, self.qss, self.qss)
         self.setText(text)
         self.setIcon(icon)
+
+
+class MGlow(QGraphicsDropShadowEffect):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setBlurRadius(40)
+        self.setColor(QColor(255, 255, 255, 255))
+        self.setOffset(0, 0)

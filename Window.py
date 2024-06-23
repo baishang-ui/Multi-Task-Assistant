@@ -12,7 +12,7 @@ from qfluentwidgets import FlyoutView, Flyout, FlyoutAnimationType, \
     SubtitleLabel, SplashScreen
 from qfluentwidgets import (NavigationItemPosition, MessageBox,
                             MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
-                            Theme, setTheme, setThemeColor)
+                            Theme, setTheme, setThemeColor,getFont)
 
 from utils import Utils
 from utils.GetPhotoFromInternet import *
@@ -43,7 +43,7 @@ class Widget(QWidget):
 class Window(MSFluentWindow):
     def __init__(self):
         super().__init__()
-
+        self.home_layout = None
         self.splashScreen = None
         self.home_b_photo = None
         self.splash = None
@@ -119,7 +119,7 @@ class Window(MSFluentWindow):
         self.home_photo_show = None
         Utils.create_file_dir()
         self.current_dir = os.getcwd().replace("\\", "/") + "/Texture/"
-        self.extend_slider_value = None
+        self.extend_slider_value = 0
         self.extend_slider = Slider(None)
         self.extend_combobox = MComboBox()
         self.pixmap_type = "旋转"
@@ -156,7 +156,7 @@ class Window(MSFluentWindow):
                                                      self.pc_h // 2 - self.height() // 2),
                                               1100)
         self.start_animation_pos.start()
-        self.start_animation_alpha = MAnimation(self, b'windowOpacity', 0, 1, 500)
+        self.start_animation_alpha = MAnimation(self, b'windowOpacity', 0, 1, 1100)
         self.start_animation_alpha.start()
 
     def initNavigation(self):
@@ -183,7 +183,7 @@ class Window(MSFluentWindow):
         self.desktop = QApplication.desktop().availableGeometry()
         self.move(self.pc_w // 2 - self.width() // 2, self.pc_h // 2 - self.height() // 2)
         self.splashScreen = SplashScreen(self.windowIcon(), self)
-        self.splashScreen.setIconSize(QSize(102, 102))
+        self.splashScreen.setIconSize(QSize(402, 402))
         self.show()
 
     def get_internet_data(self):
@@ -209,6 +209,7 @@ class Window(MSFluentWindow):
         self.home_layout.setRowStretch(0, 2)
         self.home_layout.setRowStretch(1, 1)
         self.home_card1 = MSimpleCardWidget()
+
         self.layout_home_card1 = MQGridLayout(self.home_card1)
         # self.layout_home_card1.setAlignment(Qt.AlignCenter)
         # 设置头像卡片的布局
@@ -313,7 +314,6 @@ class Window(MSFluentWindow):
         image_label.scaledToHeight(330)
         # 添加图片卡片到第三个大卡片
         self.layout_card3.addWidget(image_label)
-
         # 添加三个到主页面
         self.home_layout.addWidget(self.home_card3, 0, 0, 1, 1)
         self.home_layout.addWidget(self.home_card2, 0, 1, 1, 1)
@@ -771,9 +771,8 @@ class Window(MSFluentWindow):
                 self.show_info_bar("路径为空", "error", "错误")
                 return
 
-            # 初始化新文件名
-            new_file = ""
             # 分割文件路径获取文件名
+            print(self.file_dir)
             to = self.file_dir.split('/')
             pit_name = to[-1]
             # 打开图片文件
@@ -787,7 +786,6 @@ class Window(MSFluentWindow):
 
             # 保存处理后的图片
             handled.save(new_file)
-
             # 更新UI显示处理后的图片
             self.update_ui(new_file)
 
@@ -804,47 +802,47 @@ class Window(MSFluentWindow):
         match self.pixmap_type:
             case "旋转":
                 handled = image.rotate(int(slider_value * 360))
-                fix_name = f"rotate({str(int(slider_value * 360))})+{pit_name}"
+                fix_name = f"rotate({str(int(slider_value * 360))}){pit_name}"
             case "缩小":
                 # 计算缩小比例
                 q = slider_value == 0 and 0.1 or slider_value
                 # 计算新的尺寸
                 tup = (int(image.size[0] * q), int(image.size[1] * q))
                 handled = image.resize(tup)
-                fix_name = f"resize({str(tup)})+{pit_name}"
+                fix_name = f"resize({str(tup)}){pit_name}"
 
             case "模糊":
                 # 模糊图片
                 handled = image.filter(ImageFilter.GaussianBlur(int(slider_value * 100)))
-                fix_name = f"blur({int(slider_value * 100)})+{pit_name}"
+                fix_name = f"blur({int(slider_value * 100)}){pit_name}"
             case "轮廓":
                 # 提取图片轮廓
                 handled = image.filter(ImageFilter.CONTOUR)
-                fix_name = f"contour+{pit_name}"
+                fix_name = f"(contour){pit_name}"
             case "平滑":
                 # 平滑图片
                 handled = image.filter(ImageFilter.SMOOTH_MORE)
-                fix_name = f"smooth+{pit_name}"
+                fix_name = f"(smooth){pit_name}"
             case "锐化":
                 # 锐化图片
                 handled = image.filter(ImageFilter.SHARPEN)
-                fix_name = f"sharpen+{pit_name}"
+                fix_name = f"(sharpen){pit_name}"
             case "边界":
                 # 提取图片边界
                 handled = image.filter(ImageFilter.FIND_EDGES)
-                fix_name = f"find_edges+{pit_name}"
+                fix_name = f"(find_edges){pit_name}"
             case "边界加强":
                 # 加强图片边界
                 handled = image.filter(ImageFilter.EDGE_ENHANCE_MORE)
-                fix_name = f"edge_enhance+{pit_name}"
+                fix_name = f"(edge_enhance){pit_name}"
             case "浮雕":
                 # 浮雕效果处理图片
                 handled = image.filter(ImageFilter.EMBOSS)
-                fix_name = f"emboss+{pit_name}"
+                fix_name = f"(emboss){pit_name}"
             case "细节":
                 # 强化图片细节
                 handled = image.filter(ImageFilter.DETAIL)
-                fix_name = f"detail+{pit_name}"
+                fix_name = f"(detail){pit_name}"
             # 其他处理类型...
         return handled, fix_name
 
@@ -903,6 +901,7 @@ class Window(MSFluentWindow):
         并更新天气卡片上的各个标签。如果获取天气数据失败，则将标签设置为未找到的提示。
         """
         # 获取用户在家庭天气卡片组合框中选择的城市名称
+        QApplication.processEvents()
         res = self.home_weather_card_combobox.text()
         # 将获取到的城市名称保存为当前的天气位置
         # self.show_info_bar(f"{inspect.stack()[0][3]} -> {res}")
@@ -936,6 +935,7 @@ class Window(MSFluentWindow):
         如果获取失败，将标签描述设置为“未找到”。
         """
         # 检查是否有城市位置信息，如果没有，则不执行后续操作
+        QApplication.processEvents()
         if len(self.weather_position) == 0:
             return
         # 检查城市位置信息是否为中文字符
@@ -989,12 +989,12 @@ class Window(MSFluentWindow):
 
 
 if __name__ == '__main__':
+    os.environ['QT_SCALE_FACTOR'] = str(1)
     QApplication.setHighDpiScaleFactorRoundingPolicy(
         Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     app = QApplication(sys.argv)
-    QtWidgets.qApp.processEvents()  # 处理主进程事件
     w = Window()
     w.show()
     app.exec_()
