@@ -441,7 +441,6 @@ class Window(MSFluentWindow):
         self._extend_layout.addWidget(self.extend_card2, 0, 1, 1, 1)
 
     def show_message_box(self):
-        print(self.width(), self.height())
         w = MessageBox(
             '信息',
             'By BaiShang',
@@ -772,7 +771,6 @@ class Window(MSFluentWindow):
                 return
 
             # 分割文件路径获取文件名
-            print(self.file_dir)
             to = self.file_dir.split('/')
             pit_name = to[-1]
             # 打开图片文件
