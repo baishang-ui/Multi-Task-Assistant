@@ -995,6 +995,7 @@ class Window(MSFluentWindow):
                 # 显示获取成功的提示信息
                 self.show_info_bar("获取成功", "success", self.weather_position)
             except Exception as e:
+                print(e)
                 # 如果获取天气信息失败，更新天气标签的描述为“未找到”
                 self.card2_weather_card_label1.setDes("未选择")
                 self.card2_weather_card_label2.setDes("未找到")
