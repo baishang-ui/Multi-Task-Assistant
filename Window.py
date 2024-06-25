@@ -3,16 +3,16 @@ import os
 import sys
 
 from PIL import Image, ImageFilter
-from PyQt5 import QtWidgets
 from PyQt5.QtCore import QUrl, QTime, QTimer, QSize, QPoint
 from PyQt5.QtGui import QIcon, QDesktopServices, QFont
 from PyQt5.QtWidgets import QCompleter, QWidget, QApplication
 from qfluentwidgets import FlyoutView, Flyout, FlyoutAnimationType, \
     TimePicker, ProgressRing, Slider, SwitchButton, ProgressBar, StrongBodyLabel, \
-    SubtitleLabel, SplashScreen
+    SubtitleLabel, SplashScreen, toggleTheme, qconfig, OptionsSettingCard, FluentIcon, VBoxLayout, SwitchSettingCard, \
+    HyperlinkCard, SettingCard, ColorDialog, PushSettingCard
 from qfluentwidgets import (NavigationItemPosition, MessageBox,
                             MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
-                            Theme, setTheme, setThemeColor,getFont)
+                            Theme, setTheme, setThemeColor)
 
 from utils import Utils
 from utils.GetPhotoFromInternet import *
@@ -41,8 +41,17 @@ class Widget(QWidget):
 
 
 class Window(MSFluentWindow):
+    THEME_COLOR = "#b9beed"
+    RESOURCE_AVA = "resource/ava.png"
+    RESOURCE_LOGO = "resource/logo.png"
+    RESOURCE_CITY = "resource/city_to_code.json"
+    RESOURCE_HOME = "resource/home.png"
+    RESOURCE_GIF1 = "resource/1.gif"
+    RESOURCE_GIF2 = "resource/2.gif"
+
     def __init__(self):
         super().__init__()
+        self.setting_layout = None
         self.home_layout = None
         self.splashScreen = None
         self.home_b_photo = None
@@ -58,8 +67,9 @@ class Window(MSFluentWindow):
         self._extend_layout = MQGridLayout(None)
         self.home_weather_re_get_button = MPushButton()
         self.extend_slider_label = BodyLabel()
-        setTheme(Theme.AUTO)
-        setThemeColor("#b9beed")
+        setTheme(Theme.DARK)
+        setThemeColor(self.THEME_COLOR)
+
         self.pic_h = 400
         self.pic_w = 0
         self.all_weather = None
@@ -84,12 +94,12 @@ class Window(MSFluentWindow):
         self.card2_weather_card_label1 = MDescriptionCard()
         self.weather_data = {}
         self.home_weather_card_combobox = None
-        self.resource_ava = Utils.get_path("resource/ava.png")
-        self.city_code = Utils.get_path("resource/city_to_code.json")
-        self.resource_logo = Utils.get_path("resource/logo.png")
-        self.resource_home_p = Utils.get_path("resource/home.png")
-        self.resource_gif1 = Utils.get_path("resource/1.gif")
-        self.resource_gif2 = Utils.get_path("resource/2.gif")
+        self.resource_ava = Utils.get_path(self.RESOURCE_AVA)
+        self.city_code = Utils.get_path(self.RESOURCE_CITY)
+        self.resource_logo = Utils.get_path(self.RESOURCE_LOGO)
+        self.resource_home_p = Utils.get_path(self.RESOURCE_HOME)
+        self.resource_gif1 = Utils.get_path(self.RESOURCE_GIF1)
+        self.resource_gif2 = Utils.get_path(self.RESOURCE_GIF2)
         self.a1 = QPixmap(self.resource_ava)
         self.a2 = QPixmap(self.resource_ava)
         self.a3 = QPixmap(self.resource_ava)
@@ -143,12 +153,13 @@ class Window(MSFluentWindow):
         self.homeInterface = Widget('home', self)
         self.appInterface = Widget('app', self)
         self.extendInterface = Widget('extend', self)
-
+        self.settingInterface = Widget('setting', self)
         self.initWindow()
         self.get_internet_data()
         self.initHomeInterface()
         self.initAppInterface()
         self.initExtendInterface()
+        self.initSettings()
         self.initNavigation()
         self.splashScreen.finish()
         self.start_animation_pos = MAnimation(self, b'pos', QPoint(self.pc_w // 2 - self.width() // 2, self.pc_h + 46),
@@ -160,19 +171,14 @@ class Window(MSFluentWindow):
         self.start_animation_alpha.start()
 
     def initNavigation(self):
-        self.addSubInterface(self.homeInterface, ficon.HOME, '主页', ficon.HOME_FILL)
-        self.addSubInterface(self.appInterface, ficon.DATE_TIME, '时钟')
-        self.addSubInterface(self.extendInterface, ficon.PHOTO, '图片处理')
-
-        # 添加自定义导航组件
-        self.navigationInterface.addItem(
-            routeKey='Help',
-            icon=ficon.HELP,
-            text='帮助',
-            onClick=self.show_message_box,
-            selectable=False,
-            position=NavigationItemPosition.BOTTOM,
-        )
+        self.addSubInterface(self.homeInterface, ficon.HOME, '主页', ficon.HOME_FILL, NavigationItemPosition.TOP,
+                             False)
+        self.addSubInterface(self.appInterface, ficon.DATE_TIME, '时钟', ficon.DATE_TIME, NavigationItemPosition.TOP,
+                             False)
+        self.addSubInterface(self.extendInterface, ficon.PHOTO, '图片处理', ficon.PHOTO, NavigationItemPosition.TOP,
+                             False)
+        self.addSubInterface(self.settingInterface, ficon.SETTING, "设置", ficon.SETTING, NavigationItemPosition.BOTTOM,
+                             False)
 
         self.navigationInterface.setCurrentItem(self.homeInterface.objectName())
 
@@ -440,17 +446,49 @@ class Window(MSFluentWindow):
         self._extend_layout.addWidget(self.extend_card1, 0, 0, 1, 1)
         self._extend_layout.addWidget(self.extend_card2, 0, 1, 1, 1)
 
-    def show_message_box(self):
-        w = MessageBox(
-            '信息',
-            'By BaiShang',
-            self
+    def initSettings(self):
+        self.setting_layout = VBoxLayout(self.settingInterface)
+        self.setting_layout.setContentsMargins(20, 20, 20, 20)
+        self.setting_layout.setAlignment(Qt.AlignTop)
+        card = SwitchSettingCard(
+            icon=FluentIcon.BRIGHTNESS,
+            title="亮暗主题切换",
+            content="亮暗主题切换",
+            ontext="暗色",
+            offtext="亮色"
         )
-        w.yesButton.setText('打开b站链接')
-        w.cancelButton.setText('取消')
+        card.checkedChanged.connect(toggleTheme)
 
-        if w.exec():
-            QDesktopServices.openUrl(QUrl("https://space.bilibili.com/188801893?spm_id_from=333.1007.0.0"))
+        cardmica = SwitchSettingCard(
+            icon=FluentIcon.TRANSPARENT,
+            title="是否开启Mica效果",
+            content="打开Mica提高画面的质感，但是会增加能耗",
+            ontext="打开",
+            offtext="关闭"
+        )
+        cardmica.setValue(True)
+        cardmica.checkedChanged.connect(lambda x: self.setMicaEffectEnabled(x))
+
+        cardtheme = PushSettingCard(
+            text="选择颜色",
+            icon=FluentIcon.PALETTE,
+            title="主题颜色",
+            content="更改主题颜色"
+        )
+        cardtheme.clicked.connect(self.show_color_picker)
+
+        cardlink = HyperlinkCard(
+            url="https://gitee.com/baishang1337/mypython_-project",
+            text="打开Gitee项目链接",
+            icon=FluentIcon.LINK,
+            title="打开Gitee项目链接",
+            content="获得更多项目信息"
+        )
+
+        self.setting_layout.addWidget(card)
+        self.setting_layout.addWidget(cardmica)
+        self.setting_layout.addWidget(cardtheme)
+        self.setting_layout.addWidget(cardlink)
 
     def show_info_bar(self, content="消息", typ="new", title="", duration=1500):
         match typ:
@@ -496,6 +534,15 @@ class Window(MSFluentWindow):
                     parent=self
                 )
                 w.setCustomBackgroundColor('white', '#202020')
+
+    def show_color_picker(self):
+        w = ColorDialog(QColor(self.THEME_COLOR), "Choose Background Color", self.settingInterface, enableAlpha=False)
+        w.colorChanged.connect(lambda color: self.set_theme_color(color))
+        w.exec()
+
+    def set_theme_color(self, a):
+        self.THEME_COLOR = a.name()
+        setThemeColor(self.THEME_COLOR)
 
     def show_flyout_view(self, to, title="", content="", img=""):
         """
@@ -723,16 +770,16 @@ class Window(MSFluentWindow):
                 to = self.file_dir.split("/")
                 pit_name = to[-1]
                 # 打开图片文件
-                im = Image.open(self.file_dir)
-                # 计算裁剪比例并打印验证
-                # 根据裁剪比例计算新图片的尺寸
-                new_size = (self.pixmap.get_qrect()[0] * (self.pix.width() / self.pic_w),
-                            self.pixmap.get_qrect()[1] * (self.pix.width() / self.pic_w),
-                            self.pixmap.get_qrect()[2] * (self.pix.height() / self.pic_h),
-                            self.pixmap.get_qrect()[3] * (self.pix.height() / self.pic_h))
+                with Image.open(self.file_dir) as im:
+                    # 计算裁剪比例并打印验证
+                    # 根据裁剪比例计算新图片的尺寸
+                    new_size = (self.pixmap.get_qrect()[0] * (self.pix.width() / self.pic_w),
+                                self.pixmap.get_qrect()[1] * (self.pix.width() / self.pic_w),
+                                self.pixmap.get_qrect()[2] * (self.pix.height() / self.pic_h),
+                                self.pixmap.get_qrect()[3] * (self.pix.height() / self.pic_h))
 
-                # 对图片进行裁剪
-                handled = im.crop(new_size)
+                    # 对图片进行裁剪
+                    handled = im.crop(new_size)
                 # 生成新的文件名
                 fix_name = f"crop()+{pit_name}"
                 # 拼接新的文件路径并保存裁剪后的图片
@@ -994,5 +1041,6 @@ if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     app = QApplication(sys.argv)
     w = Window()
+
     w.show()
     app.exec_()
