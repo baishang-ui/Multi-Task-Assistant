@@ -3,15 +3,14 @@ import os
 import sys
 
 from PIL import Image, ImageFilter
-from PyQt5.QtCore import QUrl, QTime, QTimer, QSize, QPoint
-from PyQt5.QtGui import QIcon, QDesktopServices, QFont
+from PyQt5.QtCore import QTime, QTimer, QSize, QPoint
+from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QCompleter, QWidget, QApplication
 from qfluentwidgets import FlyoutView, Flyout, FlyoutAnimationType, \
     TimePicker, ProgressRing, Slider, SwitchButton, ProgressBar, StrongBodyLabel, \
-    SubtitleLabel, SplashScreen, toggleTheme, qconfig, OptionsSettingCard, FluentIcon, VBoxLayout, SwitchSettingCard, \
-    HyperlinkCard, SettingCard, ColorDialog, PushSettingCard, DropDownPushButton, RoundMenu, Action
-from qfluentwidgets import (NavigationItemPosition, MessageBox,
-                            MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
+    SubtitleLabel, SplashScreen, toggleTheme, FluentIcon, VBoxLayout, SwitchSettingCard, \
+    HyperlinkCard, ColorDialog, PushSettingCard
+from qfluentwidgets import (NavigationItemPosition, MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
                             Theme, setTheme, setThemeColor)
 
 from utils import Utils
@@ -185,7 +184,7 @@ class Window(MSFluentWindow):
     def initWindow(self):
         self.resize(977, 685)
         self.setWindowIcon(QIcon(self.resource_logo))
-        self.setWindowTitle('Main Window')
+        self.setWindowTitle('多任务助手')
         self.desktop = QApplication.desktop().availableGeometry()
         self.move(self.pc_w // 2 - self.width() // 2, self.pc_h // 2 - self.height() // 2)
         self.splashScreen = SplashScreen(self.windowIcon(), self)
@@ -457,7 +456,7 @@ class Window(MSFluentWindow):
             ontext="暗色",
             offtext="亮色"
         )
-        card.checkedChanged.connect(toggleTheme)
+        card.checkedChanged.connect(lambda: toggleTheme(False))
 
         cardmica = SwitchSettingCard(
             icon=FluentIcon.TRANSPARENT,
@@ -536,7 +535,7 @@ class Window(MSFluentWindow):
                 w.setCustomBackgroundColor('white', '#202020')
 
     def show_color_picker(self):
-        w = ColorDialog(QColor(self.THEME_COLOR), "Choose Background Color", self.settingInterface, enableAlpha=False)
+        w = ColorDialog(QColor(self.THEME_COLOR), "选择主题颜色", self.settingInterface, enableAlpha=False)
         w.colorChanged.connect(lambda color: self.set_theme_color(color))
         w.exec()
 
