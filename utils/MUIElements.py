@@ -4,7 +4,8 @@ from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve, Q
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPen, QColor
 from PyQt5.QtWidgets import QVBoxLayout, QGridLayout, QGraphicsDropShadowEffect
-from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit
+from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit, \
+    PrimaryPushButton
 from qfluentwidgets import FlowLayout
 from qfluentwidgets import FluentIcon as ficon
 from qfluentwidgets import LineEdit, ExpandLayout, ElevatedCardWidget, ImageLabel, CaptionLabel, HeaderCardWidget, \
@@ -177,11 +178,11 @@ class MImageLabel(ImageLabel):
         return [self.qr.x(), self.qr.y(), self.qr.x() + self.qr.width(), self.qr.y() + self.qr.height()]
 
 
-class MPushButton(PushButton):
+class MPushButton(PrimaryPushButton):
 
     def __init__(self, text=None, icon=ficon.CHECKBOX, parent=None):
         super().__init__(parent=parent)
-        self.qss = 'PushButton{border-radius: 10px}'
+        self.qss = 'PrimaryPushButton{border-radius: 10px}'
         setCustomStyleSheet(self, self.qss, self.qss)
         self.setText(text)
         self.setIcon(icon)
