@@ -1,5 +1,7 @@
+import json
 import os
 import sys
+from datetime import datetime
 
 from qfluentwidgets import PickerColumnFormatter
 
@@ -131,8 +133,46 @@ def create_file_dir(directory_name="Texture"):
         print(f"Error creating directory {abs_directory_name}: {error}")
 
 
-def safe_call(fn, *args, **kwargs):
+def create_json_file(file_name="todo.json", file_dir=""):
+    if not os.path.exists(file_name):
+        create_file(file_name, file_dir, [], 'w')
+
+
+def create_file(file_name, file_dir, data_in, type1='w'):
+    dir1 = file_dir + '\\' + file_name
     try:
-        fn(*args, **kwargs)
+        file = open(dir1, type1)
+        data_json = json.dumps(data_in)
+        file.write(data_json)
+        file.close()
     except Exception as e:
-        print(str(e))
+        print(e)
+
+
+def read_file(file_name, file_dir, type1='r'):
+    dir1 = file_dir + '\\' + file_name
+    try:
+        file = open(dir1, type1)
+        data = file.read()
+        file.close()
+        return json.loads(data)
+    except Exception as e:
+        print(e)
+
+
+if __name__ == '__main__':
+    a = [
+        {
+            "date": str(datetime.now()),
+            "state": True,
+            "data": "hello world"
+        },
+        {
+            "date": str(datetime.now()),
+            "state": False,
+            "data": "hello world2"
+        }
+    ]
+    create_file("a.json", os.path.dirname(__file__), a)
+    data = read_file("a.json", os.path.dirname(__file__))
+    print(data, type(data))

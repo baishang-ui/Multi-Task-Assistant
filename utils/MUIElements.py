@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QPen, QColor
 from PyQt5.QtWidgets import QVBoxLayout, QGridLayout, QGraphicsDropShadowEffect
 from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit, \
-    PrimaryPushButton
+    PrimaryPushButton, SmoothScrollArea
 from qfluentwidgets import FlowLayout
 from qfluentwidgets import FluentIcon as ficon
 from qfluentwidgets import LineEdit, ExpandLayout, ElevatedCardWidget, ImageLabel, CaptionLabel, HeaderCardWidget, \
@@ -188,9 +188,12 @@ class MPushButton(PrimaryPushButton):
         self.setIcon(icon)
 
 
-class MGlow(QGraphicsDropShadowEffect):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setBlurRadius(40)
-        self.setColor(QColor(255, 255, 255, 255))
-        self.setOffset(0, 0)
+class MSmoothScrollArea(SmoothScrollArea):
+
+    def __init__(self, ele):
+        super().__init__()
+        self.setScrollAnimation(Qt.Vertical, 700, QEasingCurve.OutCubic)
+        self.setScrollAnimation(Qt.Horizontal, 700, QEasingCurve.OutCubic)
+        self.setStyleSheet("QScrollArea{background: transparent; border: none}")
+        ele.setStyleSheet("QWidget{background: transparent}")
+        self.setWidget(ele)

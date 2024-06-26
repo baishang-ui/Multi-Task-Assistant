@@ -3,13 +3,14 @@ import os
 import sys
 
 from PIL import Image, ImageFilter
+from PyQt5 import sip
 from PyQt5.QtCore import QTime, QTimer, QSize, QPoint
 from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtWidgets import QCompleter, QWidget, QApplication
+from PyQt5.QtWidgets import QCompleter, QWidget, QApplication, QListWidgetItem
 from qfluentwidgets import FlyoutView, Flyout, FlyoutAnimationType, \
     TimePicker, ProgressRing, Slider, SwitchButton, ProgressBar, StrongBodyLabel, \
     SubtitleLabel, SplashScreen, toggleTheme, FluentIcon, VBoxLayout, SwitchSettingCard, \
-    HyperlinkCard, ColorDialog, PushSettingCard
+    HyperlinkCard, ColorDialog, PushSettingCard, ListWidget
 from qfluentwidgets import (NavigationItemPosition, MSFluentWindow, AvatarWidget, InfoBar, InfoBarPosition,
                             Theme, setTheme, setThemeColor)
 
@@ -39,6 +40,14 @@ class Widget(QWidget):
         self.setObjectName(text.replace(' ', '-'))
 
 
+def clearLayout(layout):
+    while layout.count():
+        child = layout.takeAt(0)
+        if child.widget():
+            child.widget().deleteLater()
+            sip.delete(child)
+
+
 class Window(MSFluentWindow):
     THEME_COLOR = "#b9beed"
     RESOURCE_AVA = "resource/ava.png"
@@ -47,9 +56,14 @@ class Window(MSFluentWindow):
     RESOURCE_HOME = "resource/home.png"
     RESOURCE_GIF1 = "resource/1.gif"
     RESOURCE_GIF2 = "resource/2.gif"
+    TODO_FILE = "todo.json"
 
     def __init__(self):
         super().__init__()
+        self.todo_selected_index = 9999
+        self.todo_data_text = ""
+        self.cut_b = None
+        self.todo_title_text = ""
         self.setting_layout = None
         self.home_layout = None
         self.splashScreen = None
@@ -60,7 +74,7 @@ class Window(MSFluentWindow):
         self.progress_circle_timer = None
         self.timer_pause_button = None
         self.timer_label = SubtitleLabel()
-        self.timer_start_button = MPushButton()
+        self.timer_start_button = SwitchButton()
         self.timer_pause_flag = False
         self.system_count_down = QTimer()
         self._extend_layout = MQGridLayout(None)
@@ -127,6 +141,8 @@ class Window(MSFluentWindow):
         self.home_card2 = None
         self.home_photo_show = None
         Utils.create_file_dir()
+        Utils.create_json_file(self.TODO_FILE,os.getcwd().replace("\\", "/"))
+
         self.current_dir = os.getcwd().replace("\\", "/") + "/Texture/"
         self.extend_slider_value = 0
         self.extend_slider = Slider(None)
@@ -160,6 +176,7 @@ class Window(MSFluentWindow):
         self.initExtendInterface()
         self.initSettings()
         self.initNavigation()
+        self.ref_todo_list()
         self.splashScreen.finish()
         self.start_animation_pos = MAnimation(self, b'pos', QPoint(self.pc_w // 2 - self.width() // 2, self.pc_h + 46),
                                               QPoint(self.pc_w // 2 - self.width() // 2,
@@ -182,7 +199,7 @@ class Window(MSFluentWindow):
         self.navigationInterface.setCurrentItem(self.homeInterface.objectName())
 
     def initWindow(self):
-        self.resize(977, 685)
+        self.resize(936, 674)
         self.setWindowIcon(QIcon(self.resource_logo))
         self.setWindowTitle('多任务助手')
         self.desktop = QApplication.desktop().availableGeometry()
@@ -315,10 +332,11 @@ class Window(MSFluentWindow):
         self.layout_card3 = MQGridLayout(self.home_card3)
 
         image_label = MImageLabel(candraw=False)
-        image_label.setImage(self.home_b_photo is None and self.resource_home_p or self.home_b_photo.scaled(1920, 1080))
-        image_label.scaledToHeight(330)
+        image_label.setImage(self.home_b_photo is None and self.resource_home_p or self.home_b_photo)
+        image_label.scaledToHeight(630)
+        sl = MSmoothScrollArea(image_label)
         # 添加图片卡片到第三个大卡片
-        self.layout_card3.addWidget(image_label)
+        self.layout_card3.addWidget(sl)
         # 添加三个到主页面
         self.home_layout.addWidget(self.home_card3, 0, 0, 1, 1)
         self.home_layout.addWidget(self.home_card2, 0, 1, 1, 1)
@@ -330,7 +348,6 @@ class Window(MSFluentWindow):
         self.system_countdown = QTimer(self.appInterface, timeout=self.run_countdown)
         self.app_card1 = MSimpleCardWidget()
         self.layout_app_card1 = MFLayout(self.app_card1)
-        self.layout_app_card1.setAlignment(Qt.AlignHCenter)
 
         # 定义倒计时
         self.timePicker = TimePicker(None, True)
@@ -373,7 +390,6 @@ class Window(MSFluentWindow):
         self.system_count_down = QTimer(self.appInterface, timeout=self.run_timer)
         self.app_card2 = MSimpleCardWidget()
         self.layout_app_card2 = MFLayout(self.app_card2)
-        self.layout_app_card2.setAlignment(Qt.AlignHCenter)
         self.timer_start_button = SwitchButton()
         self.timer_start_button.setOffText("开始计时")
         self.timer_start_button.setOnText("停止计时")
@@ -392,12 +408,36 @@ class Window(MSFluentWindow):
         self.timer_label = SubtitleLabel("⌛未开始计时")
         self.layout_app_card2.addWidget(self.timer_label)
         self.layout_app_card2.addWidget(self.timer_start_button)
-
         self.layout_app_card2.addWidget(self.timer_pause_button)
         self.layout_app_card2.addWidget(self.progress_circle_timer)
 
+        self.app_card3 = MSimpleCardWidget()
+        self.layout_app_card3 = MQGridLayout(self.app_card3)
+        self.layout_app_card3.setAlignment(Qt.AlignTop)
+        self.todo_data = MLineEdit()
+        self.todo_data.setPlaceholderText("输入待办")
+        self.todo_data.textChanged.connect(self.todo_get_data)
+        self.layout_app_card3.addWidget(self.todo_data)
+
+        self.todo_add_button = MPushButton("添加待办")
+        self.todo_add_button.clicked.connect(self.todo_add_data)
+        self.layout_app_card3.addWidget(self.todo_add_button)
+
+        self.todo_delete_button = MPushButton("删除待办")
+        self.todo_delete_button.clicked.connect(self.todo_delete_data)
+        self.layout_app_card3.addWidget(self.todo_delete_button)
+
+        self.app_card4 = MSimpleCardWidget()
+        self.layout_app_card4 = MQGridLayout(self.app_card4)
+        self.layout_app_card4.setAlignment(Qt.AlignTop)
+        self.todo_list = ListWidget()
+        self.todo_list.itemClicked.connect(self.todo_list_click)
+        self.layout_app_card4.addWidget(self.todo_list)
         self.app_layout.addWidget(self.app_card1, 0, 0)
         self.app_layout.addWidget(self.app_card2, 0, 1)
+        self.app_layout.addWidget(self.app_card3, 1, 0)
+        self.app_layout.addWidget(self.app_card4, 1, 1)
+
 
     def initExtendInterface(self):
         self._extend_layout = MQGridLayout(self.extendInterface)
@@ -533,6 +573,63 @@ class Window(MSFluentWindow):
                     parent=self
                 )
                 w.setCustomBackgroundColor('white', '#202020')
+
+    def todo_list_click(self):
+        self.todo_selected_index = self.todo_list.currentRow()
+        ys = {
+            0: False,
+            2: True
+        }
+
+        try:
+            data = Utils.read_file(self.TODO_FILE, os.path.dirname(__file__))
+            state = self.todo_list.item(self.todo_selected_index).checkState()
+            data[self.todo_selected_index]["state"] = ys[state]
+            Utils.create_file(self.TODO_FILE, os.path.dirname(__file__), data)
+        except Exception as e:
+            self.show_info_bar(content="未选择项", typ="warning")
+
+    def todo_get_data(self):
+        self.todo_data_text = self.todo_data.text()
+
+    def todo_delete_data(self):
+        Utils.create_json_file(self.TODO_FILE,os.getcwd().replace("\\", "/"))
+        if self.todo_selected_index == 9999:
+            self.show_info_bar(content="未选择删除项", typ="warning")
+        else:
+            data = Utils.read_file(self.TODO_FILE, os.path.dirname(__file__))
+            for i, e in enumerate(data):
+                if i == self.todo_selected_index:
+                    data.pop(i)
+                    Utils.create_file(self.TODO_FILE, os.path.dirname(__file__), data)
+            self.ref_todo_list()
+
+    def todo_add_data(self):
+        Utils.create_json_file(self.TODO_FILE,os.getcwd().replace("\\", "/"))
+        if self.todo_data_text == "":
+            self.show_info_bar(content="请输入待办事项", typ="warning")
+        else:
+            try:
+                data = Utils.read_file(self.TODO_FILE, os.path.dirname(__file__))
+                data.append({"data": self.todo_data_text, "state": False})
+                Utils.create_file(self.TODO_FILE, os.path.dirname(__file__), data)
+                self.show_info_bar(content="添加成功", typ="success")
+                self.ref_todo_list()
+            except Exception as e:
+                print(e)
+
+    def ref_todo_list(self):
+        Utils.create_json_file(self.TODO_FILE,os.getcwd().replace("\\", "/"))
+        ys = {
+            False: Qt.Unchecked,
+            True: Qt.Checked
+        }
+        self.todo_list.clear()
+        data = Utils.read_file(self.TODO_FILE, os.path.dirname(__file__))
+        for i, e in enumerate(data):
+            item = QListWidgetItem(e["data"])
+            item.setCheckState(ys[e["state"]])
+            self.todo_list.addItem(item)
 
     def show_color_picker(self):
         w = ColorDialog(QColor(self.THEME_COLOR), "选择主题颜色", self.settingInterface, enableAlpha=False)
@@ -1041,6 +1138,5 @@ if __name__ == '__main__':
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
     app = QApplication(sys.argv)
     w = Window()
-
     w.show()
     app.exec_()
