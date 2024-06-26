@@ -1,6 +1,7 @@
 # coding:utf-8
 import os
 import sys
+from datetime import datetime
 
 from PIL import Image, ImageFilter
 from PyQt5 import sip
@@ -141,9 +142,10 @@ class Window(MSFluentWindow):
         self.home_card2 = None
         self.home_photo_show = None
         Utils.create_file_dir()
-        Utils.create_json_file(self.TODO_FILE,os.getcwd().replace("\\", "/"))
+        self.root_dir = os.getcwd().replace("\\", "/")
+        Utils.create_json_file(self.root_dir)
 
-        self.current_dir = os.getcwd().replace("\\", "/") + "/Texture/"
+        self.current_dir = self.root_dir + "/Texture/"
         self.extend_slider_value = 0
         self.extend_slider = Slider(None)
         self.extend_combobox = MComboBox()
@@ -306,7 +308,7 @@ class Window(MSFluentWindow):
         completer.setMaxVisibleItems(10)
         self.home_weather_card_combobox.setCompleter(completer)
         self.home_weather_card_combobox.textChanged.connect(self.weather_position_get)
-        self.home_weather_re_get_button = MPushButton("重新获取")
+        self.home_weather_re_get_button = MPushButton("重新获取", ficon.CLOUD)
         self.home_weather_re_get_button.clicked.connect(self.re_get_weather_button)
         # 添加城市选择到第二个大卡片
         self.layout_home_card2.addWidget(self.home_weather_card_combobox, 0, 0, 1, 2)
@@ -419,11 +421,11 @@ class Window(MSFluentWindow):
         self.todo_data.textChanged.connect(self.todo_get_data)
         self.layout_app_card3.addWidget(self.todo_data)
 
-        self.todo_add_button = MPushButton("添加待办")
+        self.todo_add_button = MPushButton("添加待办", ficon.FOLDER_ADD)
         self.todo_add_button.clicked.connect(self.todo_add_data)
         self.layout_app_card3.addWidget(self.todo_add_button)
 
-        self.todo_delete_button = MPushButton("删除待办")
+        self.todo_delete_button = MPushButton("删除待办", ficon.DELETE)
         self.todo_delete_button.clicked.connect(self.todo_delete_data)
         self.layout_app_card3.addWidget(self.todo_delete_button)
 
@@ -438,7 +440,6 @@ class Window(MSFluentWindow):
         self.app_layout.addWidget(self.app_card3, 1, 0)
         self.app_layout.addWidget(self.app_card4, 1, 1)
 
-
     def initExtendInterface(self):
         self._extend_layout = MQGridLayout(self.extendInterface)
         self._extend_layout.setAlignment(Qt.AlignTop)
@@ -451,8 +452,7 @@ class Window(MSFluentWindow):
         self.extend_drag_edit.setClearButtonEnabled(True)
         self.extend_card1_layout.addWidget(self.extend_drag_edit)
 
-        self.extend_start_button = MPushButton()
-        self.extend_start_button.setText("开始")
+        self.extend_start_button = MPushButton("开始", ficon.PLAY_SOLID)
 
         self.extend_combobox = MComboBox()
         items = ['旋转', '缩小', '模糊', '轮廓', "平滑", "锐化", "边界", "边界加强", "浮雕", "细节"]
@@ -474,7 +474,7 @@ class Window(MSFluentWindow):
         self.extend_card2_tip = SubtitleLabel("图片预览")
         self.extend_card2_layout.addWidget(self.extend_card2_tip)
         self.pixmap = MImageLabel()
-        self.cut_b = MPushButton("裁剪")
+        self.cut_b = MPushButton("裁剪", ficon.CUT)
         self.cut_b.clicked.connect(self.cut_pic)
 
         self.extend_card2_layout.addWidget(self.cut_b)
@@ -582,10 +582,10 @@ class Window(MSFluentWindow):
         }
 
         try:
-            data = Utils.read_file(self.TODO_FILE, os.path.dirname(__file__))
+            data = Utils.read_file(self.TODO_FILE, self.root_dir)
             state = self.todo_list.item(self.todo_selected_index).checkState()
             data[self.todo_selected_index]["state"] = ys[state]
-            Utils.create_file(self.TODO_FILE, os.path.dirname(__file__), data)
+            Utils.create_file(self.TODO_FILE, self.root_dir, data)
         except Exception as e:
             self.show_info_bar(content="未选择项", typ="warning")
 
@@ -593,41 +593,45 @@ class Window(MSFluentWindow):
         self.todo_data_text = self.todo_data.text()
 
     def todo_delete_data(self):
-        Utils.create_json_file(self.TODO_FILE,os.getcwd().replace("\\", "/"))
+        Utils.create_json_file(self.TODO_FILE, self.root_dir)
         if self.todo_selected_index == 9999:
             self.show_info_bar(content="未选择删除项", typ="warning")
         else:
-            data = Utils.read_file(self.TODO_FILE, os.path.dirname(__file__))
+            data = Utils.read_file(self.TODO_FILE, self.root_dir)
             for i, e in enumerate(data):
                 if i == self.todo_selected_index:
                     data.pop(i)
-                    Utils.create_file(self.TODO_FILE, os.path.dirname(__file__), data)
+                    Utils.create_file(self.TODO_FILE, self.root_dir, data)
+            self.show_info_bar(content="删除成功", typ="success")
             self.ref_todo_list()
 
     def todo_add_data(self):
-        Utils.create_json_file(self.TODO_FILE,os.getcwd().replace("\\", "/"))
+        Utils.create_json_file(self.TODO_FILE, self.root_dir)
         if self.todo_data_text == "":
             self.show_info_bar(content="请输入待办事项", typ="warning")
         else:
             try:
-                data = Utils.read_file(self.TODO_FILE, os.path.dirname(__file__))
-                data.append({"data": self.todo_data_text, "state": False})
-                Utils.create_file(self.TODO_FILE, os.path.dirname(__file__), data)
+                data = Utils.read_file(self.TODO_FILE, self.root_dir)
+                data.append({"data": self.todo_data_text, "state": False, "time": str(datetime.now().strftime("%Y-%m"
+                                                                                                              "-%d "
+                                                                                                              "%H:%M:%S"
+                                                                                                              ))})
+                Utils.create_file(self.TODO_FILE, self.root_dir, data)
                 self.show_info_bar(content="添加成功", typ="success")
                 self.ref_todo_list()
             except Exception as e:
                 print(e)
 
     def ref_todo_list(self):
-        Utils.create_json_file(self.TODO_FILE,os.getcwd().replace("\\", "/"))
+        Utils.create_json_file(self.TODO_FILE, self.root_dir)
         ys = {
             False: Qt.Unchecked,
             True: Qt.Checked
         }
         self.todo_list.clear()
-        data = Utils.read_file(self.TODO_FILE, os.path.dirname(__file__))
+        data = Utils.read_file(self.TODO_FILE, self.root_dir)
         for i, e in enumerate(data):
-            item = QListWidgetItem(e["data"])
+            item = QListWidgetItem(f"{e["data"]} ({e["time"]})")
             item.setCheckState(ys[e["state"]])
             self.todo_list.addItem(item)
 

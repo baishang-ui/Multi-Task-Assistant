@@ -139,7 +139,7 @@ def create_json_file(file_name="todo.json", file_dir=""):
 
 
 def create_file(file_name, file_dir, data_in, type1='w'):
-    dir1 = file_dir + '\\' + file_name
+    dir1 = file_dir + '/' + file_name
     try:
         file = open(dir1, type1)
         data_json = json.dumps(data_in)
@@ -150,7 +150,7 @@ def create_file(file_name, file_dir, data_in, type1='w'):
 
 
 def read_file(file_name, file_dir, type1='r'):
-    dir1 = file_dir + '\\' + file_name
+    dir1 = file_dir + '/' + file_name
     try:
         file = open(dir1, type1)
         data = file.read()
