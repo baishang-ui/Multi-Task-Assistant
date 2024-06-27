@@ -4,9 +4,8 @@ import sys
 from datetime import datetime
 
 from PIL import Image, ImageFilter
-from PyQt5 import sip
 from PyQt5.QtCore import QTime, QTimer, QSize, QPoint
-from PyQt5.QtGui import QIcon, QFont
+from PyQt5.QtGui import QIcon, QFont, QColor
 from PyQt5.QtWidgets import QCompleter, QWidget, QApplication, QListWidgetItem
 from qfluentwidgets import FlyoutView, Flyout, FlyoutAnimationType, \
     TimePicker, ProgressRing, Slider, SwitchButton, ProgressBar, StrongBodyLabel, \
@@ -41,14 +40,6 @@ class Widget(QWidget):
         self.setObjectName(text.replace(' ', '-'))
 
 
-def clearLayout(layout):
-    while layout.count():
-        child = layout.takeAt(0)
-        if child.widget():
-            child.widget().deleteLater()
-            sip.delete(child)
-
-
 class Window(MSFluentWindow):
     THEME_COLOR = "#b9beed"
     RESOURCE_AVA = "resource/ava.png"
@@ -72,7 +63,7 @@ class Window(MSFluentWindow):
         self.splash = None
         self.desktop = QApplication.desktop().availableGeometry()
         self.pc_w, self.pc_h = self.desktop.width(), self.desktop.height()
-        self.progress_circle_timer = None
+        self.progress_timer = None
         self.timer_pause_button = None
         self.timer_label = SubtitleLabel()
         self.timer_start_button = SwitchButton()
@@ -185,7 +176,7 @@ class Window(MSFluentWindow):
                                                      self.pc_h // 2 - self.height() // 2),
                                               1100)
         self.start_animation_pos.start()
-        self.start_animation_alpha = MAnimation(self, b'windowOpacity', 0, 1, 1100)
+        self.start_animation_alpha = MAnimation(self, b'windowOpacity', 0, 1, 1000)
         self.start_animation_alpha.start()
 
     def initNavigation(self):
@@ -269,7 +260,7 @@ class Window(MSFluentWindow):
             lambda: self.show_flyout_view(self.card1_ava_card3, "陈影茜", "202209160305", self.resource_gif1))
         self.card1_ava_card4.clicked.connect(
             lambda: self.show_flyout_view(self.card1_ava_card4, "魏艳", "202209160301", self.resource_gif1))
-        self.card1_info_card1 = MDescriptionCard("成员", "202209160316-毕天宇")
+        self.card1_info_card1 = MDescriptionCard("组长", "202209160316-毕天宇")
         self.card1_info_card2 = MDescriptionCard("成员", "202209160307-赵锐")
         self.card1_info_card3 = MDescriptionCard("成员", "202209160305-陈影茜")
         self.card1_info_card4 = MDescriptionCard("成员", "202209160301-魏艳")
@@ -400,18 +391,18 @@ class Window(MSFluentWindow):
         self.timer_pause_button = MPushButton("暂停计时", ficon.PAUSE_BOLD)
 
         # 定义指示器
-        self.progress_circle_timer = ProgressBar()
+        self.progress_timer = ProgressBar()
 
-        self.progress_circle_timer.setRange(0, 10)
+        self.progress_timer.setRange(0, 10)
 
-        self.progress_circle_timer.setFormat("v")
+        self.progress_timer.setFormat("v")
         self.timer_start_button.checkedChanged.connect(self.timer_button_action)
         self.timer_pause_button.clicked.connect(self.timer_button_pause)
         self.timer_label = SubtitleLabel("⌛未开始计时")
         self.layout_app_card2.addWidget(self.timer_label)
         self.layout_app_card2.addWidget(self.timer_start_button)
         self.layout_app_card2.addWidget(self.timer_pause_button)
-        self.layout_app_card2.addWidget(self.progress_circle_timer)
+        self.layout_app_card2.addWidget(self.progress_timer)
 
         self.app_card3 = MSimpleCardWidget()
         self.layout_app_card3 = MQGridLayout(self.app_card3)
@@ -768,7 +759,7 @@ class Window(MSFluentWindow):
                 # 重置计时标签文本和计时值
                 self.timer_label.setText("⌛未开始计时")
                 self.timer_count = 0
-                self.progress_circle_timer.setValue(self.timer_count)
+                self.progress_timer.setValue(self.timer_count)
         except Exception as e:
             # 如果发生异常，显示异常信息
             self.show_info_bar(str(e))
@@ -814,7 +805,7 @@ class Window(MSFluentWindow):
         # 计算已经过去的时间（秒），用于后续转换为小时、分钟和秒的格式
         s = int(self.timer_count / 10)
         # 更新进度圈的值，显示当前计时器的进度
-        self.progress_circle_timer.setValue(self.timer_count % 10 + 1)
+        self.progress_timer.setValue(self.timer_count % 10 + 1)
         # 将秒数转换为小时、分钟和秒的格式，用于更新计时器的文字标签
         res = Utils.second_to_time(s)
         # 更新计时器标签的文本，显示倒计时的剩余时间

@@ -2,9 +2,9 @@ from pathlib import Path
 
 from PyQt5.QtCore import QPropertyAnimation, QAbstractAnimation, QEasingCurve, QRect
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QPen, QColor
-from PyQt5.QtWidgets import QVBoxLayout, QGridLayout, QGraphicsDropShadowEffect
-from qfluentwidgets import CardWidget, SimpleCardWidget, PushButton, setCustomStyleSheet, ComboBox, SearchLineEdit, \
+from PyQt5.QtGui import QPainter, QPen
+from PyQt5.QtWidgets import QVBoxLayout, QGridLayout
+from qfluentwidgets import CardWidget, SimpleCardWidget, setCustomStyleSheet, ComboBox, SearchLineEdit, \
     PrimaryPushButton, SmoothScrollArea
 from qfluentwidgets import FlowLayout
 from qfluentwidgets import FluentIcon as ficon
