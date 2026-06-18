@@ -234,36 +234,36 @@ class Window(MSFluentWindow):
         self.layout_home_card1_ava_card1.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card1.addWidget(self.ava1)
 
-        self.ava2 = AvatarWidget(self.a2)
+        self.ava2 = AvatarWidget(self.a1)
         self.card1_ava_card2 = MCardWidget()
         self.layout_home_card1_ava_card2 = MQGridLayout(self.card1_ava_card2)
         self.layout_home_card1_ava_card2.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card2.addWidget(self.ava2)
 
-        self.ava3 = AvatarWidget(self.a3)
+        self.ava3 = AvatarWidget(self.a1)
         self.card1_ava_card3 = MCardWidget()
         self.layout_home_card1_ava_card3 = MQGridLayout(self.card1_ava_card3)
         self.layout_home_card1_ava_card3.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card3.addWidget(self.ava3)
 
-        self.ava4 = AvatarWidget(self.a4)
+        self.ava4 = AvatarWidget(self.a1)
         self.card1_ava_card4 = MCardWidget()
         self.layout_home_card1_ava_card4 = MQGridLayout(self.card1_ava_card4)
         self.layout_home_card1_ava_card4.setAlignment(Qt.AlignCenter)
         self.layout_home_card1_ava_card4.addWidget(self.ava4)
 
         self.card1_ava_card1.clicked.connect(
-            lambda: self.show_flyout_view(self.card1_ava_card1, "毕天宇", "202209160316", self.resource_gif2))
+            lambda: self.show_flyout_view(self.card1_ava_card1, "1", "11", self.resource_gif2))
         self.card1_ava_card2.clicked.connect(
-            lambda: self.show_flyout_view(self.card1_ava_card2, "赵锐", "202209160307", self.resource_gif1))
+            lambda: self.show_flyout_view(self.card1_ava_card2, "2", "22", self.resource_gif1))
         self.card1_ava_card3.clicked.connect(
-            lambda: self.show_flyout_view(self.card1_ava_card3, "陈影茜", "202209160305", self.resource_gif1))
+            lambda: self.show_flyout_view(self.card1_ava_card3, "3", "33", self.resource_gif1))
         self.card1_ava_card4.clicked.connect(
-            lambda: self.show_flyout_view(self.card1_ava_card4, "魏艳", "202209160301", self.resource_gif1))
-        self.card1_info_card1 = MDescriptionCard("组长", "202209160316-毕天宇")
-        self.card1_info_card2 = MDescriptionCard("成员", "202209160307-赵锐")
-        self.card1_info_card3 = MDescriptionCard("成员", "202209160305-陈影茜")
-        self.card1_info_card4 = MDescriptionCard("成员", "202209160301-魏艳")
+            lambda: self.show_flyout_view(self.card1_ava_card4, "4", "44", self.resource_gif1))
+        self.card1_info_card1 = MDescriptionCard("1", "1234")
+        self.card1_info_card2 = MDescriptionCard("2", "1234")
+        self.card1_info_card3 = MDescriptionCard("3", "1234")
+        self.card1_info_card4 = MDescriptionCard("4", "1234")
         # 将头像卡片添加到第一个大卡片
         # 1
         self.layout_home_card1.addWidget(self.card1_ava_card1, 0, 0)
