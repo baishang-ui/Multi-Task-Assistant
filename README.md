@@ -1,307 +1,82 @@
-# 多任务助手 (Multi-Task Assistant)
+# 多任务助手 Multi-Task Assistant
 
-> 基于 PyQt5 + QFluentWidgets 的 Windows 桌面端多合一效率工具
+基于 Python、PyQt5 与 QFluentWidgets 的 Windows 桌面工具，将计时、待办管理和图片处理集中到同一窗口。项目重点是桌面交互、Qt 组件组合、轻量数据持久化与 Pillow 图像处理，不是 Web 服务。
 
-[![Python](https://img.shields.io/badge/Python-3.12-blue)](https://www.python.org/)
-[![PyQt5](https://img.shields.io/badge/PyQt5-latest-green)](https://www.riverbankcomputing.com/)
-[![QFluentWidgets](https://img.shields.io/badge/QFluentWidgets-latest-orange)](https://qfluentwidgets.com/)
-[![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
+## 界面预览
 
----
+以下为本地运行截图：使用独立工作目录与演示待办，关闭外部网络加载；不包含用户真实待办或个人照片。
 
-## 📸 功能概览
+![时钟、倒计时与待办界面](docs/images/clock.png)
 
-| 模块 | 功能 |
-|------|------|
-| 🏠 **主页** | 天气查询 + 动态头像展示 + 网络壁纸 |
-| ⏰ **时钟** | 倒计时 / 正计时器 / 待办事项管理 |
-| 🖼️ **图片处理** | 拖拽加载 + 10 种滤镜 + 裁剪 + 操作叠加 |
-| ⚙️ **设置** | 亮暗主题 / Mica 效果 / 自定义主题色 |
+![图片处理界面，示例输入为项目图标](docs/images/image-tools.png)
 
----
+## 已实现功能
 
-## 🏠 模块详解
+| 模块 | 实现内容 |
+| --- | --- |
+| 计时工具 | QTimer 驱动的倒计时与正计时、暂停/恢复、进度展示 |
+| 待办清单 | 添加、删除、完成状态切换，保存到工作目录下的 `todo.json` |
+| 图片处理 | 拖拽或输入本地路径、旋转、缩放、模糊、锐化等滤镜及框选裁剪 |
+| 处理记录 | 在 `Texture/` 生成处理结果，文件名前缀记录操作链，避免覆盖原始输入 |
+| 外观设置 | 明暗主题、主题色、Windows Mica 效果开关 |
+| 主页 | 城市搜索与天气查询、网络图片和本地资源展示；依赖第三方服务可用性 |
 
-### 主页
+图片裁剪会将预览图上的选区映射回原图坐标。自定义 Qt 组件封装位于 `utils/MUIElements.py`，包括拖拽输入框、卡片布局、图片选区与动画辅助类。
 
-- **横幅图片**：启动时自动从 `t.alcy.cc` 获取风景图片作为主视觉，加载失败则回退到本地图片
-- **头像卡片**：4 个头像从 Bilibili 图床远程加载，带圆角 20px 卡片容器和 MDescriptionCard 信息卡
-- **Flyout 弹窗**：点击头像触发侧滑弹出视图，展示 GIF 动图
-- **天气查询**：
-  - 输入中文城市名 → 模糊匹配自动补全（基于 `QCompleter`）
-  - 从本地 `city_to_code.json`（含全国 ≈2000+ 城市）查找城市编码
-  - 调用 sojson 天气 API → 展示城市名、天气状况、最高温、最低温
-  - 手动点击"重新获取"按钮刷新数据
+## 环境与依赖
 
-### 时钟
+- 推荐 Windows 10/11、Python 3.12；Mica 等系统效果依赖 Windows 支持。
+- PyQt5、Pillow、requests。
+- **原开发环境使用定制的 PyQt-Fluent-Widgets 1.5.7。** 仅安装公开发行版并不保证兼容；本项目 `SwitchSettingCard` 使用了定制的 `ontext` / `offtext` 参数，标准 1.5.6 构造函数不接受这些参数。
+- 仓库目前未提供该定制依赖的可分发包和完整版本锁定文件。因此不能声称在全新机器上运行一条 `pip install` 就能复现原环境，也不要用无关同名 `QFluentWidgets` 包替代。
 
-**倒计时器**：
-- UI：`TimePicker`（时/分/秒） + `SwitchButton` + `ProgressRing`（圆环进度）
-- 逻辑：`QTimer` 每秒 tick，计算 `已过秒 / 总秒 × 100 = 百分比`，更新圆环
-- 百分比 > 100 时自动停止并弹窗提醒
-
-**正计时器（秒表）**：
-- UI：`SwitchButton` + 暂停/恢复按钮 + `ProgressBar`
-- 逻辑：`QTimer` 每 100ms tick 一次（`timer_count` 对应十分之一秒），进度条 0-10 循环闪烁
-- 支持暂停/恢复，显示格式：`X小时-X分-X秒`
-
-**待办管理**：
-- 输入框 + "添加待办" / "删除待办" 按钮 + `ListWidget`（带勾选框）
-- 数据结构：
-  ```json
-  [{ "data": "内容", "state": false, "time": "2024-06-11 23:49:00" }]
-  ```
-- 持久化到 `todo.json`，支持勾选切换完成状态（`Qt.Checked` / `Qt.Unchecked`）
-
-### 图片处理
-
-**加载方式**：拖拽图片到输入框 或 手动输入绝对路径
-
-**10 种处理操作**：
-
-| 操作 | Pillow 方法 | 可调参数（Slider 0-100） | 文件前缀 |
-|------|-----------|----------------------|---------|
-| 🔄 旋转 | `Image.rotate()` | 映射 0°–360° | `rotate(角度)` |
-| 🔍 缩小 | `Image.resize()` | 缩放系数（0 视为 0.1） | `resize((w,h))` |
-| 🌫️ 模糊 | `ImageFilter.GaussianBlur()` | 模糊半径 0–100 | `blur(半径)` |
-| 👤 轮廓 | `ImageFilter.CONTOUR` | — | `(contour)` |
-| 🧼 平滑 | `ImageFilter.SMOOTH_MORE` | — | `(smooth)` |
-| ✨ 锐化 | `ImageFilter.SHARPEN` | — | `(sharpen)` |
-| 📐 边界 | `ImageFilter.FIND_EDGES` | — | `(find_edges)` |
-| 🔲 边界加强 | `ImageFilter.EDGE_ENHANCE_MORE` | — | `(edge_enhance)` |
-| 🗿 浮雕 | `ImageFilter.EMBOSS` | — | `(emboss)` |
-| 🔎 细节 | `ImageFilter.DETAIL` | — | `(detail)` |
-
-> 仅"旋转"、"缩小"、"模糊"显示 Slider，其余操作直接处理
-
-**裁剪功能**：
-- 在预览图上**拖拽框选**矩形区域（`MImageLabel` 实现自绘矩形选区）
-- 基于 `Image.crop()` 裁剪，自动计算原始图与预览图的坐标缩放比
-
-**操作叠加**：
-- 每次处理生成新文件，不覆盖原图
-- 文件名累积操作链：`crop()+blur(50)rotate(90)original.jpg`
-- 处理结果保存到 `Texture/` 目录
-
-### 设置
-
-- **亮暗主题**：`SwitchSettingCard` → `toggleTheme()`
-- **Mica 效果**：Windows 11 亚克力/云母背景（默认开启）
-- **主题色**：`ColorDialog` 取色器，实时预览
-- **项目链接**：`HyperlinkCard` 跳转 Gitee
-
----
-
-## 🏗️ 架构设计
-
-```
-Window (MSFluentWindow)           ← 主窗口，继承 QFluentWidgets 导航框架
-├── homeInterface  (Widget)       ← 4 个子页面通过 addSubInterface 注册
-├── appInterface   (Widget)       ← 左侧导航栏自动生成
-├── extendInterface(Widget)
-└── settingInterface(Widget)
-
-启动流程:
-initWindow() → get_internet_data()           → initHomeInterface()
-            → initAppInterface()              → initExtendInterface()
-            → initSettings()                  → initNavigation()
-            → ref_todo_list()                 → splashScreen.finish()
-            → 窗口弹出动画 (位置 + 透明度)
-```
-
-### 自定义组件层 (`MUIElements.py`)
-
-| 组件 | 继承 | 增强 |
-|------|------|------|
-| `MLineEdit` | `LineEdit` | 支持拖拽文件路径 + 圆角 10px |
-| `MComboBox` | `ComboBox` | 圆角 10px |
-| `MSearchLineEdit` | `SearchLineEdit` | 圆角 10px |
-| `MCardWidget` | `CardWidget` | 圆角 20px |
-| `MSimpleCardWidget` | `SimpleCardWidget` | 圆角 20px |
-| `MFLayout` | `FlowLayout` | 动画 + 统一边距 + 居中 |
-| `MQGridLayout` | `QGridLayout` | 统一边距 10px |
-| `MAnimation` | `QPropertyAnimation` | 封装缓动曲线 InOutCubic |
-| `MImageLabel` | `ImageLabel` | 鼠标拖拽框选（自绘 QPainter 矩形） + 圆角 |
-| `MDescriptionCard` | `HeaderCardWidget` | 标题 + 可更新描述文字 |
-| `MPushButton` | `PrimaryPushButton` | 圆角 10px |
-| `MSmoothScrollArea` | `SmoothScrollArea` | 透明背景 + 缓动滚动 |
-
-### 工具层 (`utils/`)
-
-| 模块 | 职责 |
-|------|------|
-| `Utils.py` | 时间转换（秒↔时分秒）、路径解析（PyInstaller 兼容）、文件读写、目录创建、`PickerColumnFormatter` 格式化器 |
-| `GetPhotoFromInternet.py` | URL 校验 → `requests` 下载 → `QPixmap.loadFromData()`，3 秒超时，异常日志 |
-| `GetWeather.py` | 城市名→编码映射 → sojson API → 解析返回 `[城市, 天气, 高温, 低温]` |
-| `GetYiyan.py` | 一言 API 请求（备用模块，当前未接入 UI） |
-| `MUIElements.py` | 12 个自定义 Qt 组件（见上表） |
-
----
-
-## 📁 项目结构
-
-```
-EndProject/
-├── Window.py                          # 主窗口（~1140 行），包含全部界面与业务逻辑
-├── todo.json                          # 待办数据（JSON 数组）
-├── dist/todo.json                     # 分发的待办文件副本
-├── resource/                          # 静态资源
-│   ├── ava.png                        # 默认头像 402×402
-│   ├── logo.png                       # 窗口图标
-│   ├── home.png                       # 默认主页横幅
-│   ├── 1.gif / 2.gif                  # Flyout 弹窗动图
-│   └── city_to_code.json              # 全国城市→编码映射（2000+ 条）
-├── Texture/                           # 图片处理输出（运行时自动创建）
-├── build/window/                      # PyInstaller 打包缓存
-│   ├── window.pkg
-│   ├── Analysis-00.toc
-│   ├── warn-window.txt                # 打包警告日志
-│   └── ...
-└── utils/                             # 工具模块包
-    ├── Utils.py                       # 通用工具函数
-    ├── GetPhotoFromInternet.py        # 网络图片下载
-    ├── GetWeather.py                  # 天气 API
-    ├── GetYiyan.py                    # 一言 API（备用）
-    └── MUIElements.py                 # 自定义 UI 组件库
-```
-
----
-
-## 🚀 快速开始
-
-### 环境要求
-
-- **操作系统**：Windows 10 / 11
-- **Python**：3.12+
-- **网络**：天气 API、远程图片加载需要网络连接
-
-### 安装
-
-```bash
-# 克隆仓库
-git clone https://gitee.com/baishang1337/mypython_-project.git
-cd mypython_-project/EndProject
-
-# 创建虚拟环境（推荐）
-python -m venv .venv
-.venv\Scripts\activate
-
-# 安装依赖
-pip install PyQt5 QFluentWidgets Pillow requests
-```
-
-### 运行
-
-```bash
+```powershell
+git clone https://github.com/baishang-ui/Multi-Task-Assistant.git
+cd Multi-Task-Assistant
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install PyQt5 Pillow requests
+# 继续安装已获授权的原定制 PyQt-Fluent-Widgets 1.5.7 发行包。
+# 未取得匹配组件库时，请先解决依赖问题，而不是跳过启动异常。
 python Window.py
 ```
 
-### 打包为独立 EXE
+请从仓库根目录启动，因为资源和输出路径与当前工作目录有关。建议在副本或独立目录内试用，并先备份既有 `todo.json`。
 
-```bash
-pyinstaller -w -i resource/logo.png --name="多任务助手" Window.py
+## 代码结构
+
+```text
+Window.py                     主窗口、页面编排与交互逻辑
+utils/MUIElements.py          自定义 Qt 组件
+utils/Utils.py                时间转换、资源路径与文件读写
+utils/GetPhotoFromInternet.py 网络图片加载
+utils/GetWeather.py           城市编码与天气接口
+utils/GetYiyan.py             独立的一言接口模块，未作为主功能展示
+resource/                    图标、动图、城市编码与默认图片
+todo.json                    本地待办数据
+Texture/                     图片处理输出
+window.spec                  历史 PyInstaller 配置
+docs/images/                 本地演示界面截图
 ```
 
-> 打包后需将 `resource/` 目录和 `todo.json` 放置在 EXE 同级目录
+`build/`、`dist/`、`__pycache__/` 和 IDE 配置中包含历史产物，不应当作独立功能或原创依赖库。此次文档整理没有删除历史文件，也未重写已有提交。
 
----
+## 验证与运行边界
 
-## 🔑 关键实现细节
+- 可以使用 `python -m compileall -q Window.py utils` 检查语法；这不替代 GUI、依赖和功能验证。
+- 当前仓库没有完整的自动化测试套件；截图是本地演示，不代表所有功能、网络服务和系统版本均经过验证。
+- 启动阶段会尝试加载第三方网络图片，天气查询会访问外部接口。离线截图应显式禁用这些请求，并使用演示数据；不要将缺省天气或演示值标成实测数据。
+- 标准 PyQt-Fluent-Widgets 1.5.6 环境中的已知启动错误为 `SwitchSettingCard.__init__() got an unexpected keyword argument 'ontext'`，原因是依赖 API 不匹配。
+- 图片处理会写入本地文件。请使用自有或已获许可的测试图片，并保留原图备份。
+- PyInstaller 配置是历史开发配置。重新打包前需核对入口 `Window.py` 的大小写、资源收集和依赖授权；现有 EXE 不作为当前源码构建成功的证明。
 
-### 1. 图片处理操作叠加
+## 许可证与第三方资源
 
-通过文件名前缀记录操作历史，每次处理打开上一阶段结果、保存新文件：
+仓库根目录的 [LICENSE](LICENSE) 为 **GNU Affero General Public License v3.0（AGPL-3.0）**，以该文件为准；本项目不是旧版 README 所写的 MIT 许可。QFluentWidgets、PyQt5 和其他依赖各有其许可条件，引用的网络图片、字体及其他素材也需独立核实授权。不要将第三方库或示例资源描述为本项目独立研发成果。
 
-```
-IMG_001.jpg                                   # 原始
-→ rotate(90)IMG_001.jpg                       # 旋转后
-→ blur(50)rotate(90)IMG_001.jpg               # 再模糊
-→ crop()+blur(50)rotate(90)IMG_001.jpg        # 再裁剪
-```
+## 项目链接
 
-核心代码位于 [`Window.py:932-983`](Window.py#L932-L983)（`process_image`）和 [`Window.py:898-930`](Window.py#L898-L930)（`handle_pixmap`）。
-
-### 2. 图片裁剪坐标映射
-
-用户在预览 `MImageLabel`（高 400px 等比例缩放）上拖拽框选后，裁剪前须将预览坐标映射回原始图片坐标：
-
-```python
-# 预览图宽度 = 原图宽 / (原图高 / 400)
-ratio_x = pix.width() / self.pic_w    # 原图宽 / 预览宽
-ratio_y = pix.height() / self.pic_h   # 原图高 / 400
-new_size = (rect.x * ratio_x, rect.y * ratio_y,
-            rect.right * ratio_x, rect.bottom * ratio_y)
-```
-
-参见 [`Window.py:849-896`](Window.py#L849-L896)（`cut_pic`）。
-
-### 3. PyInstaller 路径兼容
-
-`Utils.get_path()` 优先读取 `sys._MEIPASS`（PyInstaller 临时解压目录），开发环境回退到当前目录，确保资源文件在两种模式下均可正常加载（[`Utils.py:90-113`](utils/Utils.py#L90-L113)）。
-
-### 4. 窗口启动动画
-
-窗口从屏幕底部外滑入（1100ms），配合透明度从 0 到 1（1000ms），使用 `MAnimation` 封装（`InOutCubic` 缓动）：
-
-```python
-MAnimation(self, b'pos',       # 位置动画
-    QPoint(x, screen_h + 46),  # 起始：屏幕下方
-    QPoint(x, center_y),       # 结束：屏幕居中
-    1100)
-MAnimation(self, b'windowOpacity', 0, 1, 1000)  # 透明度动画
-```
-
----
-
-## 📊 开发历史
-
-主要迭代节点（共 25 次提交）：
-
-| 阶段 | 提交 |
-|------|------|
-| 项目初始化 | `9743d17` changed layout |
-| 布局重构 + 倒计时 | `245c2a3` add icon/change logo |
-| 倒计时/计时器逻辑优化 | `515e085` 优化倒计时，计时器逻辑 |
-| 布局持续优化 | `d8ba514` ~ `1c52155` |
-| 设置界面 | `f2de7a6` 添加设置界面 |
-| 页面优化 | `4561f06` ~ `f2e0e6e` |
-| 待办处理功能 | `2c97efd` ~ `c73f48e` |
-| 裁剪 + 操作叠加 | `d959584` 裁剪 / `3f4beb5` 操作叠加 |
-
----
-
-## 🧩 依赖项
-
-| 包 | 版本 | 用途 |
-|---|------|------|
-| PyQt5 | ≥5.15 | GUI 框架 |
-| QFluentWidgets | ≥1.0 | Fluent Design 组件库 |
-| Pillow | ≥10.0 | 图片处理 |
-| requests | ≥2.28 | HTTP 客户端 |
-| PyInstaller | ≥6.0 | 打包工具（开发依赖） |
-
----
-
-## 📝 待优化项
-
-- [ ] 天气 API（`sojson.com`）偶发不可用，建议增加备用接口
-- [ ] `GetYiyan.py` 一言模块尚未接入 UI
-- [ ] 图片处理当前仅支持本地文件，可增加 URL 直接加载
-- [ ] `Window.py` 超 1100 行，建议按模块拆分（MCV 或页面组件化）
-- [ ] 添加国际化支持（i18n）
-- [ ] 增加配置文件（用户偏好持久化）
-
----
-
-## 📄 License
-
-MIT License — 仅供学习交流使用。
-
----
-
-## 🔗 链接
-
-- [Gitee 项目主页](https://gitee.com/baishang1337/mypython_-project)
+- [GitHub 仓库](https://github.com/baishang-ui/Multi-Task-Assistant)
 - [QFluentWidgets 文档](https://qfluentwidgets.com/)
 - [PyQt5 文档](https://www.riverbankcomputing.com/static/Docs/PyQt5/)
 - [Pillow 文档](https://pillow.readthedocs.io/)
